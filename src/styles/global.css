@@ -1,0 +1,963 @@
+/* ==========================================================================
+   Orion Theory — design system (v3)
+   Foundation: Ink #0B0B0F + Paper #FFFFFF (brand identity sheet).
+   Supporting: warm cream and four accents, used deliberately.
+   Display: Archivo Expanded Italic (echoes the 12° italic wordmark)
+   Text: Figtree
+   ========================================================================== */
+
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/archivo/wdth-italic.css';
+@import '@fontsource-variable/figtree/wght.css';
+
+:root {
+  /* Core brand */
+  --ink: #0b0b0f;
+  --paper: #ffffff;
+
+  --line-on-dark: rgb(255 255 255 / 0.16);
+
+  /* Supporting colours (existing site palette) */
+  --cream: #fff4e3;
+  --tomato: #ff5a36; /* ink text on it: 6.3:1 */
+  --sun: #ffc93d;
+  --cobalt: #2350f5; /* paper text on it: 5.9:1 */
+  --mint: #3ed99b;
+
+  /* Type */
+  --font-display: 'Archivo Variable', 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  --font-text: 'Figtree Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --step--1: clamp(0.86rem, 0.84rem + 0.1vw, 0.92rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-1: clamp(1.15rem, 1.07rem + 0.4vw, 1.4rem);
+  --step-2: clamp(1.4rem, 1.22rem + 0.85vw, 1.95rem);
+  --step-3: clamp(1.8rem, 1.45rem + 1.7vw, 2.9rem);
+  --step-4: clamp(2.25rem, 1.65rem + 3vw, 4.4rem);
+  --step-5: clamp(2.7rem, 1.6rem + 5.4vw, 6.75rem);
+  --step-6: clamp(3.3rem, 1.4rem + 9vw, 10.5rem);
+
+  /* Layout */
+  --gutter: clamp(1rem, 0.5rem + 2.4vw, 2.75rem);
+  --max: 82rem;
+  --measure: 40rem;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: clamp(2rem, 1.6rem + 1.6vw, 3rem);
+  --space-5: clamp(3rem, 2rem + 4vw, 6rem);
+  --space-6: clamp(4.5rem, 3rem + 6vw, 9rem);
+
+  /* Shape — rounded like the app icon, never pill-shaped */
+  --radius-sm: 0.5rem;
+  --radius: 0.85rem;
+  --radius-lg: clamp(1.25rem, 0.8rem + 1.6vw, 2.25rem);
+
+  /* Depth — one soft, layered shadow; no glows */
+  --shadow-panel: 0 1px 0 rgb(11 11 15 / 0.04), 0 18px 40px -18px rgb(11 11 15 / 0.35);
+  --shadow-lift: 0 2px 0 rgb(11 11 15 / 0.05), 0 30px 60px -24px rgb(11 11 15 / 0.45);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --slant: -12deg; /* the wordmark's italic angle */
+
+}
+
+/* ==========================================================================
+   Themes
+   --ink and --paper are fixed brand colours and never swap. Anything a theme
+   changes goes through the tokens below.
+
+   Text tokens (--fg, --fg-2, --line, --rule, --link, --focus, button base)
+   can also be scoped: colour panels reset them so text on a yellow panel
+   stays ink in dark mode, and text on a blue panel stays white in light mode.
+   Surface tokens (--bg, --surface, --raised, --cream-surface) are page-level.
+
+   Dark mode follows the system unless the visitor picks a theme with the
+   header toggle (stored as <html data-theme="light|dark">).
+   ========================================================================== */
+:root,
+.on-light,
+.band-tomato,
+.band-sun,
+.band-mint {
+  --fg: var(--ink);
+  --fg-2: #45454f; /* 9.6:1 on paper */
+  --fg-3: #62626c; /* 6.1:1 on paper */
+  --line: rgb(11 11 15 / 0.12);
+  --rule: var(--ink);
+  --link: #c8381a; /* 5.2:1 on paper */
+  --focus: var(--cobalt);
+  --btn-base-bg: var(--ink);
+  --btn-base-fg: var(--paper);
+  --btn-base-fill: var(--tomato);
+  --btn-base-fill-fg: var(--ink);
+}
+.on-dark,
+.band-ink,
+.band-cobalt {
+  --fg: var(--paper);
+  --fg-2: rgb(255 255 255 / 0.86); /* 4.7:1 on cobalt */
+  --fg-3: rgb(255 255 255 / 0.58);
+  --line: rgb(255 255 255 / 0.16);
+  --rule: rgb(255 255 255 / 0.85);
+  --link: #ff8a6e;
+  --focus: var(--sun);
+  --btn-base-bg: var(--paper);
+  --btn-base-fg: var(--ink);
+  --btn-base-fill: var(--sun);
+  --btn-base-fill-fg: var(--ink);
+}
+:root {
+  --bg: var(--paper);
+  --surface: #f2f2f4; /* quiet surface, as on the identity sheet */
+  --surface-2: #e7e7eb;
+  --surface-3: #d9d9de;
+  --raised: var(--ink); /* ink panels */
+  --layer-ink: var(--ink); /* dark back panel on stages */
+  --cream-surface: var(--cream);
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --bg: var(--ink);
+  --surface: #17171d;
+  --surface-2: #202028;
+  --surface-3: #2b2b34;
+  --raised: #16161c;
+  --layer-ink: #34343e;
+  --cream-surface: #1f1a14;
+  --fg: #f4f4f6;
+  --fg-2: rgb(255 255 255 / 0.74);
+  --fg-3: rgb(255 255 255 / 0.56);
+  --line: rgb(255 255 255 / 0.13);
+  --rule: rgb(255 255 255 / 0.82);
+  --link: #ff8a6e; /* 7.6:1 on ink */
+  --focus: var(--sun);
+  --btn-base-bg: var(--paper);
+  --btn-base-fg: var(--ink);
+  --btn-base-fill: var(--sun);
+  --btn-base-fill-fg: var(--ink);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: var(--ink);
+    --surface: #17171d;
+    --surface-2: #202028;
+    --surface-3: #2b2b34;
+    --raised: #16161c;
+  --layer-ink: #34343e;
+    --cream-surface: #1f1a14;
+    --fg: #f4f4f6;
+    --fg-2: rgb(255 255 255 / 0.74);
+    --fg-3: rgb(255 255 255 / 0.56);
+    --line: rgb(255 255 255 / 0.13);
+    --rule: rgb(255 255 255 / 0.82);
+    --link: #ff8a6e;
+    --focus: var(--sun);
+    --btn-base-bg: var(--paper);
+    --btn-base-fg: var(--ink);
+    --btn-base-fill: var(--sun);
+    --btn-base-fill-fg: var(--ink);
+    color-scheme: dark;
+  }
+}
+/* Auto-toned logo: show the supplied file that suits the theme */
+.logo-tone-paper {
+  display: none !important;
+}
+:root[data-theme='dark'] .logo-tone-ink {
+  display: none !important;
+}
+:root[data-theme='dark'] .logo-tone-paper {
+  display: block !important;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .logo-tone-ink {
+    display: none !important;
+  }
+  :root:not([data-theme='light']) .logo-tone-paper {
+    display: block !important;
+  }
+}
+
+/* Theme switch: the new theme opens out in a circle from the toggle */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-vt::view-transition-old(root),
+  html.theme-vt::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  html.theme-vt::view-transition-new(root) {
+    animation: theme-reveal 0.65s var(--ease-out);
+  }
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+}
+
+/* Panels keep the colour of their own text */
+.on-light {
+  color: var(--ink);
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+ul[class],
+ol[class] {
+  list-style: none;
+  padding: 0;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+img {
+  height: auto;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+}
+
+/* ---------- Focus & selection ---------- */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.band-cobalt :focus-visible,
+.band-ink :focus-visible,
+.on-dark :focus-visible {
+  outline-color: var(--sun);
+}
+main:focus {
+  outline: none;
+}
+::selection {
+  background: var(--sun);
+  color: var(--ink);
+}
+
+/* ---------- Layout utilities ---------- */
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--max));
+  margin-inline: auto;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: -4rem;
+  z-index: 100;
+  padding: 0.7rem 1.1rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.skip-link:focus {
+  top: 0.75rem;
+}
+.section {
+  padding-block: var(--space-6);
+}
+.section-sm {
+  padding-block: var(--space-5);
+}
+
+/* Colour surfaces */
+.band-tomato {
+  background: var(--tomato);
+  color: var(--ink);
+}
+.band-sun {
+  background: var(--sun);
+  color: var(--ink);
+}
+.band-cobalt {
+  background: var(--cobalt);
+  color: var(--paper);
+}
+.band-mint {
+  background: var(--mint);
+  color: var(--ink);
+}
+.band-ink {
+  background: var(--raised);
+  color: var(--paper);
+}
+.band-cream {
+  background: var(--cream-surface);
+  color: var(--fg);
+}
+.band-mist {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+/* ---------- Typography ---------- */
+/* Display: expanded italic, the same lean as the wordmark. */
+.display {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 800;
+  font-stretch: 125%;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+/* Title: upright, for supporting headings. */
+.title {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-stretch: 112%;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.t-6 {
+  font-size: var(--step-6);
+}
+.t-5 {
+  font-size: var(--step-5);
+}
+.t-4 {
+  font-size: var(--step-4);
+}
+.t-3 {
+  font-size: var(--step-3);
+}
+.t-2 {
+  font-size: var(--step-2);
+}
+.lede {
+  font-size: var(--step-1);
+  line-height: 1.5;
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+.muted {
+  color: var(--fg-2);
+}
+.small {
+  font-size: var(--step--1);
+}
+
+/* Highlight block behind a word — slanted like the wordmark */
+.hl {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.14em 0.06em 0.08em;
+  margin: 0 -0.02em;
+  line-height: 1;
+  isolation: isolate;
+}
+.hl::before {
+  content: '';
+  position: absolute;
+  inset: 0.04em -0.02em 0;
+  z-index: -1;
+  border-radius: 0.1em;
+  background: var(--hl);
+  transform: skewX(var(--slant));
+}
+.hl-tomato {
+  --hl: var(--tomato);
+  color: var(--ink);
+}
+.hl-cobalt {
+  --hl: var(--cobalt);
+  color: var(--paper);
+}
+.hl-sun {
+  --hl: var(--sun);
+  color: var(--ink);
+}
+.hl-mint {
+  --hl: var(--mint);
+  color: var(--ink);
+}
+
+/* ---------- Buttons ----------
+   Tactile, not pill-shaped. On hover a slanted colour fill sweeps in from
+   the left (the wordmark angle); pressing gives a small squash. */
+.btn {
+  --btn-bg: var(--btn-base-bg);
+  --btn-fg: var(--btn-base-fg);
+  --btn-fill: var(--btn-base-fill);
+  --btn-fill-fg: var(--btn-base-fill-fg);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 3.25rem;
+  padding: 0.85rem 1.45rem;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 0;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-stretch: 112%;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.005em;
+  line-height: 1.15;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 0.35s var(--ease-out),
+    transform 0.2s var(--ease-out);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0 -25%;
+  z-index: -1;
+  background: var(--btn-fill);
+  transform: translateX(-101%) skewX(var(--slant));
+  transition: transform 0.5s var(--ease-out);
+}
+.btn:hover {
+  color: var(--btn-fill-fg);
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: translateX(0) skewX(var(--slant));
+}
+.btn:focus-visible {
+  color: var(--btn-fill-fg);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn .arrow {
+  display: inline-block;
+  transition: transform 0.35s var(--ease-out);
+}
+.btn:hover .arrow {
+  transform: translateX(4px);
+}
+.btn-tomato {
+  --btn-bg: var(--tomato);
+  --btn-fg: var(--ink);
+  --btn-fill: var(--ink);
+  --btn-fill-fg: var(--paper);
+}
+.btn-cobalt {
+  --btn-bg: var(--cobalt);
+  --btn-fg: var(--paper);
+  --btn-fill: var(--ink);
+  --btn-fill-fg: var(--paper);
+}
+.btn-sun {
+  --btn-bg: var(--sun);
+  --btn-fg: var(--ink);
+  --btn-fill: var(--paper);
+  --btn-fill-fg: var(--ink);
+}
+.btn-paper {
+  --btn-bg: var(--paper);
+  --btn-fg: var(--ink);
+  --btn-fill: var(--sun);
+  --btn-fill-fg: var(--ink);
+}
+.band-tomato .btn:not([class*='btn-']) {
+  --btn-fill: var(--paper);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+
+/* Inline text link */
+.link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--tomato);
+  transition:
+    text-decoration-color 0.2s,
+    color 0.2s;
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+.band-cobalt .link,
+.band-ink .link,
+.on-dark .link {
+  text-decoration-color: var(--sun);
+}
+
+/* Arrow link: underline that sweeps out and back in on hover */
+.arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  font-family: var(--font-display);
+  font-stretch: 112%;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 0.35rem) / 100% 2px no-repeat;
+}
+.arrow-link .arrow {
+  display: inline-block;
+  transition: transform 0.35s var(--ease-out);
+}
+.arrow-link:hover .arrow {
+  transform: translateX(5px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .arrow-link:hover {
+    animation: underline-sweep 0.7s var(--ease-out);
+  }
+}
+@keyframes underline-sweep {
+  0% {
+    background-size: 100% 2px;
+    background-position: 100% calc(100% - 0.35rem);
+  }
+  45% {
+    background-size: 0% 2px;
+    background-position: 100% calc(100% - 0.35rem);
+  }
+  46% {
+    background-position: 0 calc(100% - 0.35rem);
+  }
+  100% {
+    background-size: 100% 2px;
+    background-position: 0 calc(100% - 0.35rem);
+  }
+}
+
+/* ---------- Section heading word (Games, Apps) ---------- */
+.sec-word {
+  white-space: nowrap;
+}
+
+/* ---------- Prose ---------- */
+.prose {
+  max-width: var(--measure);
+  font-size: var(--step-0);
+  line-height: 1.72;
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose h2 {
+  margin-top: 2em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-stretch: 118%;
+  font-weight: 800;
+  font-size: var(--step-2);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.prose h3 {
+  margin-top: 1.6em;
+  font-size: var(--step-1);
+  font-weight: 750;
+  line-height: 1.3;
+}
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.55em;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+.prose li + li {
+  margin-top: 0.45em;
+}
+.prose li::marker {
+  color: var(--tomato);
+}
+.prose strong {
+  font-weight: 750;
+}
+.prose a {
+  color: var(--link);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+.prose a:hover {
+  color: var(--fg);
+}
+.prose code {
+  font-size: 0.9em;
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25em;
+}
+
+mark.placeholder {
+  background: color-mix(in srgb, var(--sun) 65%, var(--paper));
+  color: var(--ink);
+  padding: 0.05em 0.3em;
+  border-radius: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  font-weight: 600;
+}
+.band-cobalt mark.placeholder,
+.band-ink mark.placeholder,
+.on-dark mark.placeholder {
+  background: var(--sun);
+}
+
+/* ---------- Breadcrumbs ---------- */
+.breadcrumbs ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+.breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.breadcrumbs li + li::before {
+  content: '/';
+  opacity: 0.45;
+  font-style: italic;
+}
+.breadcrumbs a {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+.breadcrumbs a:hover {
+  text-decoration-thickness: 3px;
+}
+.breadcrumbs [aria-current] {
+  opacity: 0.72;
+}
+
+/* ==========================================================================
+   Motion system
+   Content is always visible without JS. `.motion` is added in <head> only
+   when the visitor has not asked for reduced motion.
+   ========================================================================== */
+
+/* 1. Entrance reveal on scroll (IntersectionObserver in BaseLayout) */
+@media (prefers-reduced-motion: no-preference) {
+  .motion [data-reveal] {
+    opacity: 0.001;
+    transform: translateY(28px);
+    transition:
+      opacity 0.8s var(--ease-out),
+      transform 0.9s var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0) * 1ms);
+  }
+  .motion [data-reveal='wipe'] {
+    opacity: 1;
+    transform: none;
+    clip-path: polygon(0 0, 0 0, -20% 100%, -20% 100%);
+    transition: clip-path 1.2s var(--ease-out);
+  }
+  .motion [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+  .motion [data-reveal='wipe'].is-in {
+    clip-path: polygon(0 0, 120% 0, 100% 100%, -20% 100%);
+  }
+}
+
+/* 2. Scroll-linked moments — only where the browser supports scroll-driven
+      animations, on wider screens, and with motion allowed. Everything
+      degrades to the finished, static state. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 48rem) {
+    /* A rounded panel that opens out to full width as it scrolls in */
+    .motion .scroll-expand {
+      animation: panel-expand linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 38%;
+    }
+    /* A panel that settles from a tilted, receding angle */
+    .motion .scroll-tilt {
+      animation: panel-tilt linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 42%;
+    }
+  }
+}
+@keyframes panel-expand {
+  from {
+    clip-path: inset(0 var(--expand-x, 4.5%) round var(--radius-lg));
+  }
+  to {
+    clip-path: inset(0 0 round 0);
+  }
+}
+@keyframes panel-tilt {
+  from {
+    transform: perspective(1600px) rotateX(16deg) translateY(3rem) scale(0.94);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* 3. Page transitions — cross-document View Transitions (no JS). The header
+      keeps its own name so it stays put while the page beneath changes. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: vt-out 0.28s var(--ease-in) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in 0.6s var(--ease-out) both;
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+}
+
+/* 4. Reduced motion: no movement anywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Anchor targets clear the sticky header */
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* ==========================================================================
+   Stage — the site's signature hero: a rounded colour panel with two more
+   panels peeking out behind it, like a stack being dealt onto the page.
+   Used by every inner page hero, product pages, articles and legal pages.
+   Set --stage-bg / --stage-fg on .stage, and --l1 / --l2 for the layers.
+   ========================================================================== */
+.stage-hero {
+  padding-top: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+}
+.stage {
+  --stage-bg: var(--surface);
+  --stage-fg: var(--fg);
+  --l1: var(--ink);
+  --l2: var(--sun);
+  position: relative;
+  isolation: isolate;
+}
+.stage-layer {
+  position: absolute;
+  z-index: -1;
+  height: 5rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.stage-layer.l1 {
+  left: 6%;
+  right: 6%;
+  top: -1.7rem;
+  background: var(--l1);
+}
+.stage-layer.l2 {
+  left: 3%;
+  right: 3%;
+  top: -0.85rem;
+  background: var(--l2);
+}
+.stage-panel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 1rem + 4vw, 5rem) clamp(1.25rem, 0.5rem + 3.5vw, 4.5rem);
+  border-radius: var(--radius-lg);
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motion .stage-panel {
+    animation: stage-rise 0.9s var(--ease-out) both;
+  }
+  .motion .stage-layer {
+    animation: layer-rise 0.8s var(--ease-out) both;
+  }
+  .motion .stage-layer.l2 {
+    animation-delay: 0.28s;
+  }
+  .motion .stage-layer.l1 {
+    animation-delay: 0.4s;
+  }
+  .motion .stage-copy > * {
+    animation: copy-rise 0.9s var(--ease-out) both;
+    animation-delay: calc(0.12s + var(--k, 0) * 80ms);
+  }
+}
+@keyframes stage-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem) scale(0.985);
+  }
+}
+@keyframes layer-rise {
+  from {
+    transform: translateY(1.8rem);
+  }
+}
+@keyframes copy-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+.stage-copy > :nth-child(2) {
+  --k: 1;
+}
+.stage-copy > :nth-child(3) {
+  --k: 2;
+}
+.stage-copy > :nth-child(4) {
+  --k: 3;
+}
+.stage-copy > :nth-child(n + 5) {
+  --k: 4;
+}
+
+/* Star cluster artwork for inner-page heroes (brand star motif) */
+.stars {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.stars .st {
+  position: absolute;
+  display: block;
+  transition: transform 0.9s var(--spring);
+}
+.stars .st-1 {
+  width: 58%;
+  left: 0;
+  top: 20%;
+}
+.stars .st-2 {
+  width: 36%;
+  right: 4%;
+  top: 0;
+}
+.stars .st-3 {
+  width: 24%;
+  right: 16%;
+  bottom: 2%;
+}
+.stars:hover .st-1 {
+  transform: rotate(90deg);
+}
+.stars:hover .st-2 {
+  transform: rotate(-90deg) scale(1.1);
+}
+.stars:hover .st-3 {
+  transform: rotate(90deg) scale(1.2);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motion .stars .st {
+    animation: star-pop 0.9s var(--spring) both;
+  }
+  .motion .stars .st-1 {
+    animation-delay: 0.35s;
+  }
+  .motion .stars .st-2 {
+    animation-delay: 0.5s;
+  }
+  .motion .stars .st-3 {
+    animation-delay: 0.62s;
+  }
+}
+@keyframes star-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.2) rotate(-120deg);
+  }
+}

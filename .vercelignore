@@ -1,0 +1,9 @@
+# Not uploaded to Vercel.
+# The original logo deliverables (incl. build_final.py and the brand sheet) stay
+# private; the site uses the clean copies in public/brand/ made by `npm run og`.
+/public/brand/logo deliverables
+/node_modules
+/dist
+/.astro
+/.claude
+/oriontheory-master-prompt.md

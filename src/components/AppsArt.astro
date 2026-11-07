@@ -1,0 +1,57 @@
+---
+/**
+ * "More apps are on the way" artwork: four tiles, one drawn, three still
+ * sketched in dashed lines. Deliberately abstract — it does not depict any
+ * specific or announced app.
+ */
+---
+
+<div class="apps-art" aria-hidden="true">
+  <svg viewBox="0 0 320 320">
+    <g class="slot">
+      <rect x="10" y="10" width="140" height="140" rx="26" class="frame solid" fill="var(--sun)"></rect>
+      <path d="M80 34C80 61.6 98.4 80 126 80C98.4 80 80 98.4 80 126C80 98.4 61.6 80 34 80C61.6 80 80 61.6 80 34Z" fill="var(--ink)"></path>
+    </g>
+    <g class="slot">
+      <rect x="170" y="10" width="140" height="140" rx="26" class="frame"></rect>
+      <circle cx="240" cy="80" r="40" class="draft"></circle>
+      <circle cx="240" cy="80" r="12" class="draft"></circle>
+    </g>
+    <g class="slot">
+      <rect x="10" y="170" width="140" height="140" rx="26" class="frame"></rect>
+      <path d="M44 286V240A36 36 0 0 1 116 240V286Z" class="draft"></path>
+    </g>
+    <g class="slot">
+      <rect x="170" y="170" width="140" height="140" rx="26" class="frame"></rect>
+      <path d="M196 196H284A88 88 0 0 1 196 284Z" class="draft"></path>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .apps-art svg {
+    width: 100%;
+    height: auto;
+  }
+  .frame {
+    fill: rgb(255 255 255 / 0.07);
+    stroke: rgb(255 255 255 / 0.85);
+    stroke-width: 3;
+    stroke-dasharray: 10 8;
+  }
+  .frame.solid {
+    stroke: none;
+  }
+  .draft {
+    fill: none;
+    stroke: var(--mint);
+    stroke-width: 3;
+    stroke-dasharray: 8 7;
+    transition: stroke-dashoffset 1.2s var(--ease-out);
+  }
+  :global(.apps-hover:hover) .draft,
+  .apps-art:hover .draft,
+  :global(.hpanel:hover) .draft {
+    stroke-dashoffset: -60;
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+/**
+ * The Orion Theory monogram, inline so it can move: an O closed by Orion's
+ * belt. Geometry is copied unchanged from the supplied
+ * `logo deliverables/icon/mark-black.svg`; only the colour is `currentColor`.
+ *
+ * `animate` draws the O and the belt once on load, then the three stars pop in.
+ * Decorative by default.
+ */
+interface Props {
+  animate?: boolean;
+  class?: string;
+  /** Accessible name. Omit for decorative use. */
+  title?: string;
+}
+const { animate = false, class: className, title } = Astro.props;
+---
+
+<svg
+  class:list={['orion-mark', { 'om-animate': animate }, className]}
+  viewBox="0 0 512 512"
+  role={title ? 'img' : undefined}
+  aria-label={title}
+  aria-hidden={title ? undefined : 'true'}
+  focusable="false"
+>
+  <path class="om-arc" pathLength="1" d="M382.25 182.68 A146 146 0 0 1 185.42 383.81" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round"></path>
+  <path class="om-arc om-arc-2" pathLength="1" d="M128.19 326.58 A146 146 0 0 1 329.32 129.75" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round"></path>
+  <line class="om-belt" pathLength="1" x1="172.00" y1="340.00" x2="233.27" y2="278.73" stroke="currentColor" stroke-width="8" stroke-linecap="round"></line>
+  <line class="om-belt om-belt-2" pathLength="1" x1="278.73" y1="233.27" x2="341.56" y2="170.44" stroke="currentColor" stroke-width="8" stroke-linecap="round"></line>
+  <path class="om-star om-star-1" d="M152.76 311.24 C152.76 340.04 171.96 359.24 200.76 359.24 C171.96 359.24 152.76 378.44 152.76 407.24 C152.76 378.44 133.56 359.24 104.76 359.24 C133.56 359.24 152.76 340.04 152.76 311.24Z" fill="currentColor"></path>
+  <path class="om-star om-star-2" d="M256.00 190.00 C256.00 229.60 282.40 256.00 322.00 256.00 C282.40 256.00 256.00 282.40 256.00 322.00 C256.00 282.40 229.60 256.00 190.00 256.00 C229.60 256.00 256.00 229.60 256.00 190.00Z" fill="currentColor"></path>
+  <path class="om-star om-star-3" d="M359.24 112.76 C359.24 136.76 375.24 152.76 399.24 152.76 C375.24 152.76 359.24 168.76 359.24 192.76 C359.24 168.76 343.24 152.76 319.24 152.76 C343.24 152.76 359.24 136.76 359.24 112.76Z" fill="currentColor"></path>
+</svg>
+
+<style>
+  .orion-mark {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .om-star {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.6s var(--spring);
+  }
+  /* Hover (from the mark or any wrapping .mark-hover): the stars turn a quarter. */
+  :global(.mark-hover:hover) .om-star,
+  .orion-mark:hover .om-star {
+    transform: rotate(90deg) scale(1.08);
+  }
+  :global(.mark-hover:hover) .om-star-2,
+  .orion-mark:hover .om-star-2 {
+    transform: rotate(90deg) scale(1.16);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .om-animate .om-arc,
+    :global(.motion) .om-animate .om-belt {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: om-draw 1.1s var(--ease-out) 0.2s forwards;
+    }
+    :global(.motion) .om-animate .om-arc-2 {
+      animation-delay: 0.35s;
+    }
+    :global(.motion) .om-animate .om-belt {
+      animation-duration: 0.6s;
+      animation-delay: 0.8s;
+    }
+    :global(.motion) .om-animate .om-belt-2 {
+      animation-delay: 0.9s;
+    }
+    :global(.motion) .om-animate .om-star {
+      animation: om-pop 0.7s var(--spring) both;
+    }
+    :global(.motion) .om-animate .om-star-1 {
+      animation-delay: 1s;
+    }
+    :global(.motion) .om-animate .om-star-2 {
+      animation-delay: 1.12s;
+    }
+    :global(.motion) .om-animate .om-star-3 {
+      animation-delay: 1.24s;
+    }
+  }
+  @keyframes om-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes om-pop {
+    from {
+      transform: scale(0) rotate(-90deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+</style>

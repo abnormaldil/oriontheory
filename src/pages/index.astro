@@ -1,0 +1,356 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import HeroStack from '~/components/HeroStack.astro';
+import AppsArt from '~/components/AppsArt.astro';
+import ProductFeature from '~/components/ProductFeature.astro';
+import PostList from '~/components/PostList.astro';
+import Star from '~/components/Star.astro';
+import { apps, appDirections, games } from '~/data/products';
+import { verifiedEmail } from '~/data/site';
+import { getPublishedPosts } from '~/lib/journal';
+import { organizationSchema, websiteSchema } from '~/lib/seo';
+
+const featuredGame = games[0];
+const featuredApp = apps[0];
+const posts = (await getPublishedPosts()).slice(0, 3);
+
+const principles = [
+  { title: 'Easy to begin.', body: 'Clear interfaces and a welcoming first experience.', color: 'var(--tomato)' },
+  { title: 'Worth returning to.', body: 'Thoughtful details make everyday use feel rewarding.', color: 'var(--cobalt)' },
+  { title: 'Made with care.', body: 'We keep improving our work and listen to useful feedback.', color: 'var(--mint)' },
+] as const;
+---
+
+<BaseLayout
+  title="Orion Theory — Mobile Apps & Games"
+  description="Discover mobile games and apps from Orion Theory. Explore What Flag, our upcoming flag-guessing game, and find release updates, support, and policies."
+  path="/"
+  schema={[organizationSchema(verifiedEmail()), websiteSchema()]}
+>
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="display hero-title">
+          <span class="line" style="--d:0">Good <span class="hl hl-tomato">games.</span></span>
+          <span class="line" style="--d:1">Useful <span class="hl hl-cobalt">apps.</span></span>
+          <span class="line" style="--d:2">A little more wonder.</span>
+        </h1>
+        <p class="lede hero-lede">
+          Orion Theory is an independent publisher of mobile games and apps — made to be easy to
+          get into, satisfying to return to, and built with care.
+        </p>
+        <div class="actions hero-actions">
+          <a class="btn btn-tomato" href="/games">Explore games <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-cobalt" href="/apps">Explore apps <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <HeroStack />
+      </div>
+    </div>
+  </section>
+
+  <!-- Games -->
+  <section class="games-sec" aria-labelledby="games-title">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <h2 id="games-title" class="display t-6 sec-word">Games<span class="sec-star"><Star color="var(--tomato)" /></span></h2>
+        <div class="sec-intro">
+          <p class="lede">
+            Quick to start and fun to return to. Our first game is in development — here’s a
+            first look.
+          </p>
+          <a class="arrow-link" href="/games">Explore games <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      {featuredGame && <ProductFeature product={featuredGame} heading="h3" />}
+    </div>
+  </section>
+
+  <!-- Apps -->
+  <section class="apps-sec band-cobalt scroll-expand" aria-labelledby="apps-title">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <h2 id="apps-title" class="display t-6 sec-word">Apps<span class="sec-star"><Star color="var(--sun)" /></span></h2>
+        <div class="sec-intro">
+          <p class="lede">
+            Practical and creative tools for everyday life — for staying productive, getting
+            organized, making things and handling the small jobs well.
+          </p>
+          <a class="arrow-link" href="/apps">Explore apps <span class="arrow" aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      {
+        featuredApp ? (
+          <ProductFeature product={featuredApp} heading="h3" />
+        ) : (
+          <div class="apps-empty" data-reveal>
+            <div class="apps-empty-copy">
+              <h3 class="display t-4">More apps are on the way.</h3>
+              <p class="lede muted">
+                We haven’t released an app yet. When we do, it will appear here with its own page,
+                support details and a verified Google Play link.
+              </p>
+              <ul class="directions" aria-label="Areas we’re exploring">
+                {
+                  appDirections.map((d) => (
+                    <li>
+                      <span class="dir-star" aria-hidden="true"><Star color={d.color} /></span>
+                      {d.name}
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+            <div class="apps-empty-art apps-hover">
+              <AppsArt />
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Studio -->
+  <section class="studio section" aria-labelledby="studio-title">
+    <div class="wrap studio-grid">
+      <div class="studio-copy" data-reveal>
+        <h2 id="studio-title" class="display t-4">Good ideas deserve thoughtful execution.</h2>
+        <p class="lede muted">
+          Orion Theory is an independent app and game publisher focused on making mobile
+          experiences with clarity, character, and care.
+        </p>
+        <a class="btn" href="/about">About Orion Theory <span class="arrow" aria-hidden="true">→</span></a>
+      </div>
+      <ul class="principles">
+        {
+          principles.map((p, i) => (
+            <li class="principle" data-reveal style={`--reveal-delay:${i * 90}`}>
+              <span class="principle-star" aria-hidden="true">
+                <Star color={p.color} />
+              </span>
+              <div>
+                <h3 class="title t-2">{p.title}</h3>
+                <p class="muted">{p.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Journal (only real, published posts) -->
+  {
+    posts.length > 0 && (
+      <section class="journal-sec band-cream" aria-labelledby="journal-title">
+        <div class="wrap section">
+          <div class="sec-head" data-reveal>
+            <h2 id="journal-title" class="display t-4">
+              Notes from Orion Theory
+            </h2>
+            <div class="sec-intro">
+              <p class="lede muted">
+                Product updates, game design notes, and practical guides from the making of our
+                apps.
+              </p>
+              <a class="arrow-link" href="/journal">
+                Read the journal <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+          <PostList posts={posts} level="h3" />
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    overflow: clip;
+  }
+  .hero-grid {
+    display: grid;
+    gap: var(--space-4);
+    align-items: center;
+    padding-block: clamp(2rem, 1rem + 4vw, 5rem) clamp(3rem, 1.5rem + 5vw, 6.5rem);
+  }
+  .hero-title {
+    font-size: clamp(2.6rem, 1rem + 4.4vw, 5.4rem);
+    line-height: 1.02;
+  }
+  .hero-title .line {
+    display: block;
+  }
+  .hero-title .hl {
+    margin-block: 0.05em;
+  }
+  .hero-lede {
+    margin-top: var(--space-4);
+    color: var(--fg-2);
+  }
+  .hero-actions {
+    margin-top: var(--space-4);
+  }
+  .hero-visual {
+    width: min(100%, 38rem);
+    justify-self: center;
+  }
+  @media (min-width: 60rem) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: clamp(2.5rem, 5vw, 5.5rem);
+      min-height: min(46rem, calc(100svh - 4.75rem));
+    }
+    .hero-visual {
+      justify-self: end;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .hero-title .line {
+      animation: line-in 0.95s var(--ease-out) both;
+      animation-delay: calc(var(--d) * 110ms);
+    }
+    :global(.motion) .hero-lede,
+    :global(.motion) .hero-actions {
+      animation: line-in 0.95s var(--ease-out) 0.38s both;
+    }
+  }
+  @keyframes line-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5em) skewX(4deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ---------- Section heads: big word + intro ---------- */
+  .sec-head {
+    display: grid;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    align-items: end;
+  }
+  .sec-intro {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+  }
+  .sec-star {
+    display: inline-block;
+    width: 0.34em;
+    margin-left: 0.1em;
+    vertical-align: 0.52em;
+    transition: transform 0.8s var(--spring);
+  }
+  .sec-head:hover .sec-star {
+    transform: rotate(90deg);
+  }
+  @media (min-width: 58rem) {
+    .sec-head {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: var(--space-5);
+    }
+  }
+
+  /* ---------- Games ---------- */
+  .games-sec {
+    padding-block: var(--space-5) var(--space-6);
+  }
+
+  /* ---------- Apps: a cobalt panel that opens to full width on scroll ---------- */
+  .apps-sec {
+    padding-block: var(--space-6);
+  }
+  .apps-empty {
+    display: grid;
+    gap: var(--space-5);
+    align-items: center;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line-on-dark);
+  }
+  .apps-empty-copy {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .apps-empty-copy h3 {
+    max-width: 12ch;
+  }
+  .directions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.75rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 700;
+    font-size: var(--step-1);
+  }
+  .directions li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .dir-star {
+    width: 0.95em;
+  }
+  .apps-empty-art {
+    width: min(100%, 24rem);
+    justify-self: center;
+  }
+  @media (min-width: 58rem) {
+    .apps-empty {
+      grid-template-columns: 7fr 5fr;
+    }
+  }
+
+  /* ---------- Studio ---------- */
+  .studio-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .studio-copy {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    align-content: start;
+  }
+  .studio-copy h2 {
+    max-width: 14ch;
+  }
+  .principles {
+    display: grid;
+    border-top: 1.5px solid var(--rule);
+  }
+  .principle {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    padding-block: 1.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .principle-star {
+    width: 3.25rem;
+    transition: transform 0.8s var(--spring);
+  }
+  .principle:hover .principle-star {
+    transform: rotate(90deg) scale(1.08);
+  }
+  .principle p {
+    margin-top: 0.3rem;
+  }
+  @media (min-width: 58rem) {
+    .studio-grid {
+      grid-template-columns: 5fr 6fr;
+      gap: clamp(3rem, 6vw, 7rem);
+    }
+  }
+</style>

@@ -1,0 +1,193 @@
+---
+/**
+ * Homepage hero scene: three colour panels dealt into a stack — About,
+ * Apps, Games — each peeking out above the next. They rise in on load, lift
+ * on hover, and fan apart slightly as the hero scrolls away.
+ *
+ * Mouse shortcut only: the same destinations are in the hero buttons and the
+ * main navigation, so the scene is hidden from assistive tech and skipped by
+ * the keyboard.
+ */
+import OrionMark from './OrionMark.astro';
+import AppsArt from './AppsArt.astro';
+import WhatFlagArt from './WhatFlagArt.astro';
+---
+
+<div class="hstack" aria-hidden="true">
+  <div class="hs-slot s0">
+    <a class="hpanel hp-about mark-hover" href="/about" tabindex="-1" style="--i:0">
+      <span class="hp-label">About</span>
+      <span class="hp-arrow">↗</span>
+      <span class="hp-art hp-art-mark"><OrionMark /></span>
+    </a>
+  </div>
+  <div class="hs-slot s1">
+    <a class="hpanel hp-apps" href="/apps" tabindex="-1" style="--i:1">
+      <span class="hp-label">Apps</span>
+      <span class="hp-arrow">↗</span>
+      <span class="hp-art hp-art-apps"><AppsArt /></span>
+    </a>
+  </div>
+  <div class="hs-slot s2">
+    <a class="hpanel hp-games art-hover" href="/games" tabindex="-1" style="--i:2">
+      <span class="hp-label">Games</span>
+      <span class="hp-arrow">↗</span>
+      <span class="hp-art hp-art-flag"><WhatFlagArt decorative /></span>
+    </a>
+  </div>
+</div>
+
+<style>
+  .hstack {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 0.92;
+    perspective: 1800px;
+  }
+  .hs-slot {
+    position: absolute;
+    height: 76%;
+  }
+  .s0 {
+    top: 0;
+    left: 9%;
+    right: 9%;
+    --fan: 16%;
+    --tilt: -2.5deg;
+  }
+  .s1 {
+    top: 12%;
+    left: 4.5%;
+    right: 4.5%;
+    --fan: 8%;
+    --tilt: 1.5deg;
+  }
+  .s2 {
+    top: 24%;
+    left: 0;
+    right: 0;
+    --fan: 0%;
+    --tilt: 0deg;
+  }
+
+  .hpanel {
+    position: relative;
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+    text-decoration: none;
+    transform: rotate(var(--tilt));
+    transition:
+      translate 0.6s var(--ease-out),
+      box-shadow 0.6s var(--ease-out);
+  }
+  .hpanel:hover {
+    translate: 0 -11%;
+    box-shadow: var(--shadow-lift);
+  }
+  .hp-about {
+    background: var(--tomato);
+    color: var(--ink);
+  }
+  .hp-apps {
+    background: var(--cobalt);
+    color: var(--paper);
+  }
+  .hp-games {
+    background: var(--sun);
+    color: var(--ink);
+  }
+  .hp-label {
+    position: absolute;
+    left: clamp(1rem, 0.6rem + 1.4vw, 1.75rem);
+    top: clamp(0.65rem, 0.4rem + 0.8vw, 1.1rem);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-stretch: 125%;
+    font-weight: 800;
+    font-size: clamp(1.25rem, 0.9rem + 1.3vw, 2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .hp-arrow {
+    position: absolute;
+    right: clamp(1rem, 0.6rem + 1.4vw, 1.75rem);
+    top: clamp(0.65rem, 0.4rem + 0.8vw, 1.1rem);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 0.9rem + 0.8vw, 1.5rem);
+    line-height: 1.3;
+    transition: transform 0.5s var(--ease-out);
+  }
+  .hpanel:hover .hp-arrow {
+    transform: translate(3px, -3px);
+  }
+  .hp-art {
+    position: absolute;
+    display: block;
+  }
+  .hp-art-mark {
+    width: 34%;
+    right: 8%;
+    top: 22%;
+  }
+  .hp-art-apps {
+    width: 30%;
+    right: 9%;
+    top: 21%;
+  }
+  .hp-art-flag {
+    width: 64%;
+    left: 50%;
+    top: 15%;
+    translate: -50% 0;
+  }
+
+  /* Entrance: dealt in from below, one after another */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .hpanel {
+      animation: deal 1.05s var(--ease-out) both;
+      animation-delay: calc(0.2s + var(--i) * 0.14s);
+    }
+  }
+  @keyframes deal {
+    from {
+      opacity: 0;
+      transform: translateY(55%) rotate(calc(var(--tilt) + 5deg));
+    }
+    to {
+      opacity: 1;
+      transform: rotate(var(--tilt));
+    }
+  }
+
+  /* Scroll: the stack fans apart as the hero leaves the screen */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) and (min-width: 48rem) {
+      :global(.motion) .hs-slot {
+        animation: fan linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 90%;
+      }
+    }
+  }
+  @keyframes fan {
+    to {
+      translate: 0 calc(var(--fan) * -1);
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .hstack {
+      aspect-ratio: 1 / 0.86;
+    }
+    .s0 {
+      --tilt: -1.5deg;
+    }
+    .s1 {
+      --tilt: 1deg;
+    }
+  }
+</style>

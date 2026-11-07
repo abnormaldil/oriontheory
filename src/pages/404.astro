@@ -1,0 +1,117 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import OrionMark from '~/components/OrionMark.astro';
+import Star from '~/components/Star.astro';
+import { stageStyle } from '~/lib/stage';
+---
+
+<BaseLayout
+  title="Page not found | Orion Theory"
+  description="This page could not be found on oriontheory.store."
+  path="/404"
+  noindex
+>
+  <script is:inline>
+    // Hosts differ on trailing slashes. Canonical URLs never end in "/", so
+    // send e.g. /policy/ to /policy instead of showing a 404.
+    (function () {
+      var p = location.pathname;
+      if (p.length > 1 && /\/+$/.test(p)) {
+        location.replace(p.replace(/\/+$/, '') + location.search + location.hash);
+      }
+    })();
+  </script>
+
+  <section class="stage-hero lost" aria-labelledby="lost-title">
+    <div class="wrap">
+    <div class="stage" style={stageStyle('cobalt')}>
+    <span class="stage-layer l1" aria-hidden="true"></span>
+    <span class="stage-layer l2" aria-hidden="true"></span>
+    <div class="stage-panel on-dark lost-grid">
+      <div class="lost-copy">
+        <h1 id="lost-title" class="display t-5">This page drifted out of orbit.</h1>
+        <p class="lede">
+          The link may be out of date, or the address may have a typo. These pages are all still
+          here:
+        </p>
+        <ul class="lost-links">
+          <li><a class="btn btn-paper" href="/">Home</a></li>
+          <li><a class="btn btn-tomato" href="/games">Games</a></li>
+          <li><a class="btn btn-sun" href="/apps">Apps</a></li>
+          <li><a class="btn btn-paper" href="/journal">Journal</a></li>
+          <li><a class="btn btn-paper" href="/support">Support</a></li>
+        </ul>
+      </div>
+      <div class="lost-art mark-hover" aria-hidden="true">
+        <span class="lost-mark"><OrionMark animate /></span>
+        <span class="lost-star"><Star color="var(--sun)" /></span>
+      </div>
+    </div>
+    </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .lost {
+    padding-bottom: var(--space-5);
+  }
+  .lost-grid {
+    display: grid;
+    gap: var(--space-5);
+    align-items: center;
+  }
+  .lost-copy {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .lost h1 {
+    max-width: 12ch;
+  }
+  .lost-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: var(--space-2);
+  }
+  .lost-art {
+    position: relative;
+    width: min(100%, 22rem);
+    justify-self: center;
+    color: var(--paper);
+  }
+  .lost-mark {
+    display: block;
+    transform: rotate(-12deg);
+  }
+  .lost-star {
+    position: absolute;
+    width: 18%;
+    right: -4%;
+    bottom: 4%;
+    transition: transform 0.9s var(--spring);
+  }
+  .lost-art:hover .lost-star {
+    transform: translate(-30%, -40%) rotate(180deg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .lost-star {
+      animation: drift 6s var(--ease) 1.4s both;
+    }
+  }
+  @keyframes drift {
+    from {
+      translate: -180% -220%;
+      rotate: -180deg;
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+  }
+  @media (min-width: 56rem) {
+    .lost-grid {
+      grid-template-columns: 3fr 2fr;
+    }
+  }
+</style>

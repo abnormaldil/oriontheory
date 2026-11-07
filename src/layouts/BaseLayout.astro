@@ -1,0 +1,133 @@
+---
+import '~/styles/global.css';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import { site } from '~/data/site';
+import { absoluteUrl } from '~/lib/seo';
+
+interface Props {
+  /** Full <title>, used verbatim (content.md supplies brand-inclusive titles). */
+  title: string;
+  description: string;
+  /** Canonical path, e.g. "/policy". */
+  path: string;
+  ogImage?: string | undefined;
+  ogImageAlt?: string | undefined;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  /** schema.org nodes; wrapped in a single @graph. */
+  schema?: Record<string, unknown>[];
+  article?: { published: Date; modified?: Date | undefined; section?: string };
+  /** Hide the global "Have a question?" footer callout (e.g. on /contact). */
+  hideCallout?: boolean;
+}
+
+const {
+  title,
+  description,
+  path,
+  ogImage = site.defaultOgImage,
+  ogImageAlt = 'Orion Theory — apps and games for curious minds',
+  ogType = 'website',
+  noindex = false,
+  schema = [],
+  article,
+  hideCallout = false,
+} = Astro.props;
+
+const canonical = absoluteUrl(path);
+const ogImageUrl = absoluteUrl(ogImage);
+const jsonLd =
+  schema.length > 0
+    ? JSON.stringify({ '@context': 'https://schema.org', '@graph': schema }).replace(/</g, '\\u003c')
+    : null;
+---
+
+<!doctype html>
+<html lang={site.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
+
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    {
+      article && (
+        <>
+          <meta property="article:published_time" content={article.published.toISOString()} />
+          {article.modified && (
+            <meta property="article:modified_time" content={article.modified.toISOString()} />
+          )}
+          {article.section && <meta property="article:section" content={article.section} />}
+        </>
+      )
+    }
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <meta name="theme-color" content="#ffffff" data-default="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0f" data-default="#0b0b0f" media="(prefers-color-scheme: dark)" />
+    <meta name="generator" content={Astro.generator} />
+
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      // Apply a saved theme before first paint (no flash). No saved choice = follow the system.
+      try {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+      } catch (e) {}
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('motion');
+      }
+    </script>
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header path={path} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer hideCallout={hideCallout} />
+
+    <script>
+      // Section entrance reveal. Content is visible by default; this only
+      // runs when the `.motion` class is present (no reduced-motion request).
+      const root = document.documentElement;
+      if (root.classList.contains('motion') && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-in');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
+        );
+        document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+      } else {
+        document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-in'));
+      }
+    </script>
+  </body>
+</html>

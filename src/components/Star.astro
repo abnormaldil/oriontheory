@@ -1,0 +1,23 @@
+---
+/**
+ * The four-point star from the Orion Theory mark (same curve proportions),
+ * used as the studio's one recurring motif. Decorative.
+ */
+interface Props {
+  color?: string;
+  class?: string;
+}
+const { color = 'currentColor', class: className } = Astro.props;
+---
+
+<svg class:list={['star', className]} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+  <path d="M50 0C50 30 70 50 100 50C70 50 50 70 50 100C50 70 30 50 0 50C30 50 50 30 50 0Z" fill={color}></path>
+</svg>
+
+<style>
+  .star {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+</style>

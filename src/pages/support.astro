@@ -1,0 +1,194 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+import Faq from '~/components/Faq.astro';
+import { products, productPath, releaseLine } from '~/data/products';
+
+// Support answers per product. Add an entry when a product is added.
+const supportFaq: Record<string, { question: string; answer: string; answerHtml?: string }[]> = {
+  'what-flag': [
+    {
+      question: 'I found a problem in What Flag. What should I send?',
+      answer:
+        'Tell us what happened, what you expected, and which device and operating-system version you’re using. Please don’t include passwords or sensitive personal information.',
+    },
+    {
+      question: 'The game is not working as expected.',
+      answer:
+        'If possible, close and reopen the app and make sure you’re using the latest available version. If the issue continues, contact support with the steps that reproduce it.',
+    },
+    {
+      question: 'How do I request help with privacy or my data?',
+      answer: '',
+      answerHtml:
+        'Visit our <a href="/policy">Privacy Policy</a> and contact Orion Theory using the verified privacy contact address listed there.',
+    },
+    {
+      question: 'Where can I find the game?',
+      answer: '',
+      answerHtml:
+        'The official Google Play listing will be linked from the <a href="/games/what-flag">What Flag page</a> after release.',
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="Orion Theory Support — Help with Our Apps"
+  description="Find help and contact Orion Theory about What Flag and other mobile apps and games."
+  path="/support"
+>
+  <PageHero
+    title="Support"
+    band="cream"
+    size="t-6"
+    intro="We’re here to help with Orion Theory games and apps. Select a product below or contact us with your question."
+  />
+
+  <nav class="wrap pick" aria-labelledby="pick-title">
+    <h2 id="pick-title" class="title t-2">Select a product</h2>
+    <ul class="pick-list">
+      {
+        products.map((p) => (
+          <li>
+            <a href={`#${p.slug}`} style={`--c:${p.theme.bg}`}>
+              <span class="pick-name">{p.name}</span>
+              <span class="pick-sub">{p.kind === 'game' ? 'Game' : 'App'} · {releaseLine(p)}</span>
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/contact" style="--c:var(--surface);--c-fg:var(--fg)">
+          <span class="pick-name">Something else</span>
+          <span class="pick-sub">Contact us</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  {
+    products.map((p) => (
+      <section id={p.slug} class="wrap section-sm product-support" aria-labelledby={`${p.slug}-support`}>
+        <div class="ps-head" data-reveal>
+          <h2 id={`${p.slug}-support`} class="display t-4">
+            {p.name} support
+          </h2>
+          <p class="muted">
+            {p.status === 'in-development'
+              ? `${p.name} is in development and not yet available. These answers will grow once it’s released.`
+              : `Answers to common questions about ${p.name}.`}{' '}
+            <a class="link" href={productPath(p)}>About {p.name}</a>
+          </p>
+        </div>
+        <Faq items={supportFaq[p.slug] ?? []} />
+      </section>
+    ))
+  }
+
+  <section class="still band-sun scroll-expand" aria-labelledby="still-title">
+    <div class="wrap still-grid" data-reveal>
+      <h2 id="still-title" class="display t-4">Still need help?</h2>
+      <div class="still-body">
+        <p class="lede">Send us a message with as much detail as you can.</p>
+        <div class="actions">
+          <a class="btn" href="/contact">Contact support <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="arrow-link" href="/policy">Privacy Policy</a>
+          <a class="arrow-link" href="/terms">Terms &amp; Conditions</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pick {
+    padding-block: var(--space-5) var(--space-2);
+  }
+  .pick h2 {
+    margin-bottom: var(--space-3);
+  }
+  .pick-list {
+    display: grid;
+    gap: 0.85rem;
+  }
+  @media (min-width: 48rem) {
+    .pick-list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .pick-list a {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.35rem 3.5rem 1.35rem 1.5rem;
+    border-radius: var(--radius);
+    background: var(--c);
+    color: var(--c-fg, var(--ink));
+    text-decoration: none;
+    transition:
+      transform 0.45s var(--ease-out),
+      box-shadow 0.45s var(--ease-out);
+  }
+  .pick-list a::after {
+    content: '→';
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    translate: 0 -50%;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .pick-list a:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-panel);
+  }
+  .pick-list a:hover::after {
+    transform: translateX(4px);
+  }
+  .pick-name {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-stretch: 122%;
+    font-weight: 800;
+    font-size: var(--step-2);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .pick-sub {
+    font-weight: 600;
+    font-size: var(--step--1);
+  }
+  .ps-head {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  .ps-head p {
+    max-width: 52ch;
+  }
+  @media (min-width: 58rem) {
+    .ps-head {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+      gap: var(--space-5);
+    }
+  }
+  .still-grid {
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+  .still-body {
+    display: grid;
+    gap: var(--space-3);
+  }
+  @media (min-width: 58rem) {
+    .still-grid {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+    }
+  }
+</style>

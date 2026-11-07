@@ -1,0 +1,177 @@
+---
+/**
+ * One product as a single large composition: a stage in the product's colour
+ * holding the key art, with an ink info panel laid over it. Used on the
+ * homepage and the /games and /apps listings. The stage settles from a tilted
+ * angle as it scrolls in. `flip` alternates the layout in longer lists.
+ */
+import ProductArt from './ProductArt.astro';
+import { isAvailable, productPath, releaseLine, type Product } from '~/data/products';
+
+interface Props {
+  product: Product;
+  heading?: 'h2' | 'h3';
+  flip?: boolean;
+  /** Extra action shown after the primary one (e.g. "Explore games"). */
+  secondary?: { href: string; label: string };
+}
+const { product, heading = 'h3', flip = false, secondary } = Astro.props;
+const Heading = heading;
+const href = productPath(product);
+const available = isAvailable(product);
+const kindLabel = product.kind === 'game' ? 'Mobile game' : 'Mobile app';
+---
+
+<article
+  class:list={['feature', { flip }]}
+  style={`--p-bg:${product.theme.bg};--p-ink:${product.theme.ink};--p-accent:${product.theme.accent}`}
+  aria-labelledby={`feature-${product.slug}`}
+>
+  <div class="feature-stage scroll-tilt">
+    <a class="feature-art art-hover" href={href} tabindex="-1" aria-hidden="true">
+      <ProductArt product={product} id={`feature-art-${product.slug}`} />
+    </a>
+
+    <div class="feature-info band-ink" data-reveal>
+      <Heading id={`feature-${product.slug}`} class="display feature-name">
+        <a href={href}>{product.name}</a>
+      </Heading>
+      <p class="feature-promise title">{product.promise}</p>
+      <p class="feature-summary muted">{product.summary}</p>
+      <p class="feature-meta">{kindLabel} · {product.category}</p>
+
+      <p class="feature-release">
+        <span class="dot" aria-hidden="true"></span>
+        {releaseLine(product)}
+        {!available && <span class="release-note muted">The store link will appear here when the listing is public.</span>}
+      </p>
+
+      <div class="actions">
+        <a class="btn btn-sun" href={href}>
+          See {product.name} <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        {
+          available && (
+            <a class="btn btn-paper" href={product.playStoreUrl} rel="noopener">
+              Get it on Google Play <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+          )
+        }
+        {
+          secondary && (
+            <a class="arrow-link" href={secondary.href}>
+              {secondary.label} <span class="arrow" aria-hidden="true">→</span>
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</article>
+
+<style>
+  .feature-stage {
+    position: relative;
+    display: grid;
+    gap: clamp(1rem, 0.5rem + 1.5vw, 1.75rem);
+    padding: clamp(0.75rem, 0.4rem + 1.4vw, 1.75rem);
+    border-radius: var(--radius-lg);
+    background: var(--p-bg);
+    color: var(--p-ink);
+    transform-origin: 50% 100%;
+  }
+  .feature-art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 0.5rem + 3vw, 3.5rem);
+    min-height: 16rem;
+  }
+  .feature-art :global(svg),
+  .feature-art :global(img) {
+    width: min(100%, 34rem);
+  }
+  .feature-info {
+    display: grid;
+    gap: 1.1rem;
+    align-content: center;
+    justify-items: start;
+    padding: clamp(1.5rem, 1rem + 2.5vw, 3.25rem);
+    border-radius: calc(var(--radius-lg) - 0.5rem);
+    box-shadow: var(--shadow-lift);
+  }
+  .feature-meta {
+    font-weight: 700;
+    color: var(--sun);
+  }
+  .feature-name {
+    font-size: clamp(2.6rem, 1.5rem + 4.2vw, 5.25rem);
+    line-height: 0.9;
+  }
+  .feature-name a {
+    text-decoration: none;
+    background-image: linear-gradient(var(--p-bg), var(--p-bg));
+    background-size: 0 0.08em;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.5s var(--ease-out);
+  }
+  .feature-name a:hover {
+    background-size: 100% 0.08em;
+  }
+  .feature-name a:focus-visible {
+    outline-color: var(--sun);
+  }
+  .feature-promise {
+    font-size: var(--step-2);
+    max-width: 20ch;
+  }
+  .feature-summary {
+    max-width: 38ch;
+  }
+  .feature-release {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-on-dark);
+    font-weight: 700;
+    font-size: var(--step--1);
+    width: 100%;
+  }
+  .release-note {
+    flex-basis: 100%;
+    margin-top: 0.2rem;
+    font-weight: 400;
+  }
+  .dot {
+    align-self: center;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--p-accent);
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.14);
+  }
+  .feature .actions {
+    margin-top: 0.5rem;
+  }
+  .feature .arrow-link {
+    color: var(--paper);
+  }
+  @media (min-width: 58rem) {
+    .feature-stage {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: stretch;
+    }
+    .feature.flip .feature-stage {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+    .feature.flip .feature-art {
+      order: 2;
+    }
+    .feature-art {
+      min-height: 32rem;
+    }
+  }
+</style>

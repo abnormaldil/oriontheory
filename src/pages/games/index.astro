@@ -1,0 +1,92 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+import ProductFeature from '~/components/ProductFeature.astro';
+import Star from '~/components/Star.astro';
+import { games, isAvailable } from '~/data/products';
+
+const released = games.filter(isAvailable).length;
+---
+
+<BaseLayout
+  title="Games by Orion Theory — Mobile Games"
+  description="Browse mobile games from Orion Theory, starting with What Flag, an upcoming flag quiz game. Find game details, release updates, support, and Google Play links."
+  path="/games"
+>
+  <PageHero
+    title="Games"
+    size="t-6"
+    band="tomato"
+    intro="Mobile games that are quick to start and fun to come back to. Our first game, What Flag, is currently in development."
+  >
+    <div slot="art" class="stars" aria-hidden="true">
+      <span class="st st-1"><Star color="var(--ink)" /></span>
+      <span class="st st-2"><Star color="var(--sun)" /></span>
+      <span class="st st-3"><Star color="var(--paper)" /></span>
+    </div>
+  </PageHero>
+
+  {
+    released === 0 && (
+      <section class="wrap first" aria-labelledby="first-title" data-reveal>
+        <h2 id="first-title" class="display t-4">
+          The first release is on its way.
+        </h2>
+        <p class="lede muted">
+          We’re putting the finishing touches on What Flag, a game about recognizing the flags of
+          the world. More games will appear here as they’re released.
+        </p>
+      </section>
+    )
+  }
+
+  <section class="wrap catalogue" aria-label="All games">
+    {games.map((game, i) => <ProductFeature product={game} heading="h2" flip={i % 2 === 1} />)}
+  </section>
+
+  <section class="wrap follow" aria-labelledby="follow-title" data-reveal>
+    <h2 id="follow-title" class="title t-3">Follow along as new games take shape.</h2>
+    <div class="actions">
+      <a class="btn" href="/journal">Read the journal <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="arrow-link" href="/apps">Looking for apps? <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .first {
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5) var(--space-4);
+  }
+  .first h2 {
+    max-width: 14ch;
+  }
+  @media (min-width: 58rem) {
+    .first {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+      gap: var(--space-5);
+    }
+  }
+  .catalogue {
+    display: grid;
+    gap: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
+  .follow {
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-4) var(--space-5);
+    border-top: 1.5px solid var(--rule);
+  }
+  .follow h2 {
+    max-width: 18ch;
+  }
+  @media (min-width: 58rem) {
+    .follow {
+      grid-template-columns: 7fr 5fr;
+      align-items: center;
+    }
+  }
+</style>

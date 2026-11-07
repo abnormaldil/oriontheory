@@ -1,0 +1,163 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import PostList from '~/components/PostList.astro';
+import { getPublishedPosts, getRelatedPosts, postPath, type Post } from '~/lib/journal';
+import { site } from '~/data/site';
+import { formatDate, isoDate } from '~/lib/dates';
+import { articleSchema, breadcrumbSchema } from '~/lib/seo';
+import { stageStyle } from '~/lib/stage';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const { Content } = await render(post);
+const path = postPath(post);
+const related = await getRelatedPosts(post);
+const { title, description, publishedAt, updatedAt, category, cta } = post.data;
+const ogImage = post.data.ogImage ?? site.defaultOgImage;
+
+const crumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'Journal', href: '/journal' },
+  { name: title, href: path },
+];
+---
+
+<BaseLayout
+  title={`${title} | Orion Theory Journal`}
+  description={description}
+  path={path}
+  ogType="article"
+  ogImage={ogImage}
+  ogImageAlt={title}
+  article={{ published: publishedAt, modified: updatedAt, section: category }}
+  schema={[
+    articleSchema({ title, description, path, image: ogImage, published: publishedAt, updated: updatedAt }),
+    breadcrumbSchema(crumbs),
+  ]}
+>
+  <article aria-labelledby="article-title">
+    <header class="stage-hero">
+      <div class="wrap">
+      <div class="stage on-light" style={stageStyle('mint')}>
+      <span class="stage-layer l1" aria-hidden="true"></span>
+      <span class="stage-layer l2" aria-hidden="true"></span>
+      <div class="stage-panel stage-copy a-head-inner">
+        <Breadcrumbs items={crumbs} />
+        <h1 id="article-title" class="display t-4">{title}</h1>
+        <dl class="a-meta">
+          <div>
+            <dt>Published</dt>
+            <dd><time datetime={isoDate(publishedAt)}>{formatDate(publishedAt)}</time></dd>
+          </div>
+          {
+            updatedAt && (
+              <div>
+                <dt>Updated</dt>
+                <dd>
+                  <time datetime={isoDate(updatedAt)}>{formatDate(updatedAt)}</time>
+                </dd>
+              </div>
+            )
+          }
+          <div>
+            <dt>Section</dt>
+            <dd>{category}</dd>
+          </div>
+          <div>
+            <dt>By</dt>
+            <dd>Orion Theory</dd>
+          </div>
+        </dl>
+      </div>
+      </div>
+      </div>
+    </header>
+
+    <div class="wrap a-body">
+      <div class="prose">
+        <Content />
+      </div>
+      {
+        cta && (
+          <aside class="a-cta" aria-label="Next step">
+            <a class="btn btn-tomato" href={cta.href}>
+              {cta.label} <span class="arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="arrow-link" href="/journal">
+              All journal articles <span class="arrow" aria-hidden="true">→</span>
+            </a>
+          </aside>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="wrap section-sm" aria-labelledby="related-title">
+        <h2 id="related-title" class="display t-3 related-title">
+          Keep reading
+        </h2>
+        <PostList posts={related} level="h3" />
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .a-head-inner {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .a-head-inner h1 {
+    max-width: 18ch;
+  }
+  .a-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2.5rem;
+    padding-top: var(--space-2);
+    border-top: 1.5px solid var(--rule);
+  }
+  .a-meta dt {
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+  .a-meta dd {
+    font-weight: 750;
+  }
+  .a-body {
+    padding-block: var(--space-5);
+  }
+  .prose {
+    margin-inline: auto;
+  }
+  .prose :global(p:first-child) {
+    font-size: var(--step-1);
+    line-height: 1.55;
+    font-weight: 500;
+  }
+  .a-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    max-width: var(--measure);
+    margin: var(--space-4) auto 0;
+    padding-top: var(--space-3);
+    border-top: 1.5px solid var(--rule);
+  }
+  .related-title {
+    margin-bottom: var(--space-4);
+  }
+</style>

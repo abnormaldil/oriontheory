@@ -1,0 +1,42 @@
+---
+/**
+ * The supplied Orion Theory logo files, served from /public/brand (copied
+ * byte-for-byte from public/brand/logo deliverables by `npm run og`).
+ * Never redrawn or set as text.
+ *
+ *   tone="ink"   → black logo, for light surfaces
+ *   tone="paper" → white logo, for dark surfaces
+ *   tone="auto"  → follows the page theme (both files; CSS shows one)
+ */
+interface Props {
+  variant?: 'lockup' | 'wordmark' | 'mark';
+  tone?: 'ink' | 'paper' | 'auto';
+  alt?: string;
+  eager?: boolean;
+  class?: string;
+}
+const { variant = 'lockup', tone = 'ink', alt = 'Orion Theory', eager = false, class: className } = Astro.props;
+
+// Intrinsic sizes of the supplied SVGs (viewBox), so layout never shifts.
+const size = {
+  lockup: [929, 252],
+  wordmark: [1348, 262],
+  mark: [512, 512],
+} as const;
+const [width, height] = size[variant];
+const tones = tone === 'auto' ? (['ink', 'paper'] as const) : ([tone] as const);
+---
+
+{
+  tones.map((t) => (
+    <img
+      class:list={['logo', `logo-${variant}`, tone === 'auto' && `logo-tone-${t}`, className]}
+      src={`/brand/${variant}-${t}.svg`}
+      width={width}
+      height={height}
+      alt={alt}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  ))
+}

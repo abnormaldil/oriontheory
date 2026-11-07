@@ -1,0 +1,28 @@
+---
+import WhatFlagArt from './WhatFlagArt.astro';
+import type { Product } from '~/data/products';
+
+interface Props {
+  product: Product;
+  id?: string;
+  /** Use eager loading for above-the-fold artwork. */
+  eager?: boolean;
+}
+const { product, id, eager = false } = Astro.props;
+const art = product.artwork;
+---
+
+{
+  art === 'what-flag' ? (
+    <WhatFlagArt id={id ?? `art-${product.slug}`} />
+  ) : (
+    <img
+      src={art.src}
+      alt={art.alt}
+      width={art.width}
+      height={art.height}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  )
+}

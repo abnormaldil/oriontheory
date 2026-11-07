@@ -1,0 +1,376 @@
+---
+/**
+ * Reusable product detail page for games (/games/[slug]) and apps (/apps/[slug]).
+ * Everything comes from src/data/products.ts.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import ProductArt from './ProductArt.astro';
+import Faq from './Faq.astro';
+import PostList from './PostList.astro';
+import { isAvailable, productPath, releaseLine, type Product } from '~/data/products';
+import { site } from '~/data/site';
+import { getPostsTagged } from '~/lib/journal';
+import { formatDate } from '~/lib/dates';
+import { absoluteUrl, breadcrumbSchema, organizationId } from '~/lib/seo';
+
+interface Props {
+  product: Product;
+}
+const { product } = Astro.props;
+const path = productPath(product);
+const available = isAvailable(product);
+const related = await getPostsTagged(product.relatedTag);
+const listing = product.kind === 'game' ? { name: 'Games', href: '/games' } : { name: 'Apps', href: '/apps' };
+
+const crumbs = [{ name: 'Home', href: '/' }, listing, { name: product.name, href: path }];
+
+// SoftwareApplication only once a real, verified store listing exists.
+const schema: Record<string, unknown>[] = [breadcrumbSchema(crumbs)];
+if (available) {
+  schema.push({
+    '@type': 'SoftwareApplication',
+    name: product.name,
+    description: product.description,
+    url: absoluteUrl(path),
+    applicationCategory: product.applicationCategory,
+    operatingSystem: 'Android',
+    installUrl: product.playStoreUrl,
+    publisher: { '@id': organizationId },
+    ...(product.icon ? { image: absoluteUrl(product.icon.src) } : {}),
+    ...(product.releaseDate ? { datePublished: product.releaseDate } : {}),
+  });
+}
+
+const facts = [
+  { term: 'Type', value: `${product.kind === 'game' ? 'Mobile game' : 'Mobile app'} · ${product.category}` },
+  { term: available ? 'Platform' : 'Planned platform', value: product.platformLabel },
+  { term: 'Status', value: available ? 'Available' : 'In development' },
+  {
+    term: 'Release date',
+    value: available && product.releaseDate ? formatDate(new Date(product.releaseDate)) : 'Not yet announced',
+  },
+  { term: 'Developer & publisher', value: site.name },
+];
+
+const ogImage = product.slug === 'what-flag' ? '/og/what-flag.png' : site.defaultOgImage;
+---
+
+<BaseLayout
+  title={product.seo.title}
+  description={product.seo.description}
+  path={path}
+  ogImage={ogImage}
+  ogImageAlt={`${product.name} — ${releaseLine(product)}`}
+  schema={schema}
+>
+  <section class="stage-hero" aria-labelledby="product-title">
+    <div class="wrap">
+      <div
+        class:list={['stage', product.theme.ink === 'var(--paper)' ? 'on-dark' : 'on-light']}
+        style={`--stage-bg:${product.theme.bg};--stage-fg:${product.theme.ink};--l1:var(--layer-ink);--l2:${product.theme.accent};--p-bg:${product.theme.bg};--p-accent:${product.theme.accent}`}
+      >
+        <span class="stage-layer l1" aria-hidden="true"></span>
+        <span class="stage-layer l2" aria-hidden="true"></span>
+        <div class="stage-panel p-hero-grid">
+          <div class="stage-copy p-hero-copy">
+            <Breadcrumbs items={crumbs} />
+            <h1 id="product-title" class="display p-title">{product.name}</h1>
+            <p class="title p-promise">{product.promise}</p>
+            <p class="lede">{product.description}</p>
+            <div class="actions">
+              {
+                available ? (
+                  <a class="btn" href={product.playStoreUrl} rel="noopener">
+                    Get it on Google Play <span class="arrow" aria-hidden="true">↗</span>
+                  </a>
+                ) : (
+                  <a class="btn" href="/journal">
+                    Release updates <span class="arrow" aria-hidden="true">→</span>
+                  </a>
+                )
+              }
+              <a class="arrow-link" href={`/support#${product.slug}`}>
+                {product.name} support <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+          <div class="p-hero-art art-hover">
+            {
+              available && product.icon ? (
+                <img src={product.icon.src} alt={product.icon.alt} width={product.icon.width} height={product.icon.height} />
+              ) : (
+                <ProductArt product={product} id="detail-art" eager />
+              )
+            }
+            {!available && <p class="art-note">Pre-release artwork</p>}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="wrap facts-band" aria-label={`${product.name} details`}>
+    <dl class="facts band-ink">
+      {
+        facts.map((f) => (
+          <div class="fact">
+            <dt>{f.term}</dt>
+            <dd>{f.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="wrap section p-features" aria-labelledby="features-title">
+    <h2 id="features-title" class="visually-hidden">About {product.name}</h2>
+    {
+      product.features.map((f) => (
+        <div class="p-feature" data-reveal>
+          <h3 class="display t-4">{f.title}</h3>
+          <p class="lede muted">{f.body}</p>
+        </div>
+      ))
+    }
+  </section>
+
+  {
+    available && product.screenshots && product.screenshots.length > 0 && (
+      <section class="wrap section-sm" aria-labelledby="screens-title">
+        <h2 id="screens-title" class="display t-3">Screenshots</h2>
+        <ul class="screens">
+          {product.screenshots.map((s) => (
+            <li>
+              <img src={s.src} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="release scroll-expand" style={`--p-bg:${product.theme.bg}`} aria-labelledby="release-title">
+    <div class="wrap release-grid" data-reveal>
+      <h2 id="release-title" class="display t-4">{releaseLine(product)}</h2>
+      <div class="release-body">
+        {
+          available ? (
+            <>
+              <p class="lede">{product.name} is available now on {product.platformLabel}.</p>
+              <a class="btn" href={product.playStoreUrl} rel="noopener">
+                Get it on Google Play <span class="arrow" aria-hidden="true">↗</span>
+              </a>
+            </>
+          ) : (
+            <>
+              <p class="lede">
+                {product.name} is in development. We’ll add the official {product.platformLabel} link here
+                when it’s available.
+              </p>
+              <a class="btn btn-paper" href="/journal">
+                Release updates <span class="arrow" aria-hidden="true">→</span>
+              </a>
+            </>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="wrap section" aria-labelledby="related-title">
+        <h2 id="related-title" class="display t-3 block-title">
+          News about {product.name}
+        </h2>
+        <PostList posts={related} level="h3" />
+      </section>
+    )
+  }
+
+  <section class="wrap section faq-section" aria-labelledby="faq-title">
+    <h2 id="faq-title" class="display t-3 block-title">Questions about {product.name}</h2>
+    <Faq items={product.faq} />
+
+    <nav class="help" aria-label={`${product.name} help and policies`}>
+      <a class="help-link" href={`/support#${product.slug}`}><span>Support</span><span aria-hidden="true">→</span></a>
+      <a class="help-link" href="/policy"><span>Privacy Policy</span><span aria-hidden="true">→</span></a>
+      <a class="help-link" href="/terms"><span>Terms &amp; Conditions</span><span aria-hidden="true">→</span></a>
+      <a class="help-link" href="/contact"><span>Contact</span><span aria-hidden="true">→</span></a>
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .p-hero-grid {
+    display: grid;
+    gap: var(--space-4);
+    align-items: center;
+    padding-top: clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+  .p-hero-copy {
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+  }
+  .p-hero-copy :global(.breadcrumbs) {
+    margin-bottom: var(--space-2);
+  }
+  .p-title {
+    font-size: clamp(3.2rem, 1.6rem + 7.4vw, 9rem);
+    line-height: 0.86;
+  }
+  .p-promise {
+    font-size: var(--step-3);
+    max-width: 16ch;
+  }
+  .p-hero-copy .actions {
+    margin-top: 0.5rem;
+  }
+  .p-hero-art {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: center;
+  }
+  .p-hero-art :global(svg),
+  .p-hero-art :global(img) {
+    width: min(100%, 36rem);
+  }
+  .art-note {
+    font-size: var(--step--1);
+    font-weight: 600;
+    opacity: 0.78;
+  }
+  @media (min-width: 58rem) {
+    .p-hero-grid {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    }
+  }
+
+  /* Facts: an ink strip laid under the stage */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0;
+    margin-top: 0.75rem;
+    padding: clamp(1rem, 0.5rem + 1.5vw, 1.75rem) clamp(1.25rem, 0.5rem + 3.5vw, 4.5rem);
+    border-radius: var(--radius-lg);
+  }
+  .fact {
+    padding: 0.9rem 1.25rem 0.9rem 0;
+  }
+  .fact dt {
+    font-size: var(--step--1);
+    font-weight: 700;
+    color: var(--sun);
+  }
+  .fact dd {
+    margin-top: 0.2rem;
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 700;
+    font-size: var(--step-1);
+    line-height: 1.2;
+  }
+
+  .p-features {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .p-feature {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .p-feature h3 {
+    max-width: 16ch;
+  }
+  @media (min-width: 58rem) {
+    .p-feature {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+      gap: var(--space-5);
+    }
+  }
+
+  .screens {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    margin-top: var(--space-4);
+  }
+  .screens img {
+    width: auto;
+    max-height: 32rem;
+    border-radius: var(--radius);
+  }
+
+  /* Release: an ink panel that opens out to full width on scroll */
+  .release {
+    background: var(--raised);
+    color: var(--paper);
+    padding-block: var(--space-6);
+  }
+  .release h2 {
+    color: var(--p-bg);
+    max-width: 12ch;
+  }
+  .release-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .release-body {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    align-content: end;
+  }
+  .release :focus-visible {
+    outline-color: var(--sun);
+  }
+  @media (min-width: 58rem) {
+    .release-grid {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+    }
+  }
+
+  .block-title {
+    margin-bottom: var(--space-4);
+  }
+  .help {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem;
+    margin-top: var(--space-5);
+  }
+  .help-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.75rem;
+    padding: 0.85rem 1.15rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      background-color 0.3s,
+      transform 0.4s var(--ease-out);
+  }
+  .help-link span:last-child {
+    transition: transform 0.4s var(--ease-out);
+  }
+  .help-link:hover {
+    color: var(--ink);
+    background: var(--sun);
+    transform: translateY(-3px);
+  }
+  .help-link:hover span:last-child {
+    transform: translateX(4px);
+  }
+</style>

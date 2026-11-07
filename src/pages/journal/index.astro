@@ -1,0 +1,42 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+import PostList from '~/components/PostList.astro';
+import Star from '~/components/Star.astro';
+import { getPublishedPosts } from '~/lib/journal';
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout
+  title="Orion Theory Journal — Updates, Guides & Game Notes"
+  description="Read Orion Theory updates, flag-learning guides, mobile game notes, and news about What Flag and future releases."
+  path="/journal"
+>
+  <PageHero
+    title="The Orion Theory journal"
+    band="mint"
+    intro="Updates from the studio, stories behind our games and apps, and things worth learning along the way."
+  >
+    <div slot="art" class="stars" aria-hidden="true">
+      <span class="st st-1"><Star color="var(--ink)" /></span>
+      <span class="st st-2"><Star color="var(--cobalt)" /></span>
+      <span class="st st-3"><Star color="var(--paper)" /></span>
+    </div>
+  </PageHero>
+
+  <section class="wrap section-sm" aria-labelledby="all-title">
+    <h2 id="all-title" class="visually-hidden">All articles</h2>
+    {posts.length > 0 ? <PostList posts={posts} level="h2" /> : <p class="lede">The first article is on its way.</p>}
+    <p class="foot muted">
+      Looking for release news? Updates appear here and on each
+      <a class="link" href="/games">game</a> and <a class="link" href="/apps">app</a> page.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .foot {
+    margin-block: var(--space-4) 0;
+  }
+</style>

@@ -1,0 +1,211 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+import Star from '~/components/Star.astro';
+import { verifiedEmail } from '~/data/site';
+
+const email = verifiedEmail();
+
+/**
+ * No backend form: content.md §8 says to use mailto unless a backend confirms
+ * submission. Once the address is verified, each topic opens the visitor's
+ * email app with a subject line.
+ */
+const topics: { name: string; subject: string; include: string; color: string }[] = [
+  {
+    name: 'App support',
+    subject: 'App support',
+    include: 'Which app, what you were trying to do, and your device and operating-system version.',
+    color: 'var(--cobalt)',
+  },
+  {
+    name: 'Bug report',
+    subject: 'Bug report',
+    include: 'What happened, what you expected, and the steps that make it happen again.',
+    color: 'var(--tomato)',
+  },
+  {
+    name: 'Feedback or suggestion',
+    subject: 'Feedback',
+    include: 'Which app or page it’s about, and what would make it better for you.',
+    color: 'var(--mint)',
+  },
+  {
+    name: 'Privacy or data request',
+    subject: 'Privacy or data request',
+    include: 'The app involved and what you’d like us to do. Please don’t send passwords.',
+    color: 'var(--sun)',
+  },
+  {
+    name: 'Business enquiry',
+    subject: 'Business enquiry',
+    include: 'Who you are, your organisation, and what you’d like to discuss.',
+    color: 'var(--fg)',
+  },
+];
+
+const mailto = (subject: string) =>
+  email ? `mailto:${email}?subject=${encodeURIComponent(`[Orion Theory] ${subject}`)}` : null;
+---
+
+<BaseLayout
+  title="Contact Orion Theory — App Support & Enquiries"
+  description="Contact Orion Theory for app support, feedback, privacy questions, or business enquiries."
+  path="/contact"
+  hideCallout
+>
+  <PageHero
+    title="Get in touch"
+    band="ink"
+    intro="Need help with an Orion Theory app, want to share feedback, or have a business enquiry? Choose the right topic and contact us."
+  />
+
+  <div class="wrap contact-grid">
+    <section aria-labelledby="topics-title">
+      <h2 id="topics-title" class="title t-2 topics-title">Choose a topic</h2>
+      <ul class="topics">
+        {
+          topics.map((t) => {
+            const href = mailto(t.subject);
+            return (
+              <li class="topic" data-reveal>
+                <span class="topic-star" aria-hidden="true">
+                  <Star color={t.color} />
+                </span>
+                <div>
+                  <h3 class="title topic-name">
+                    {href ? (
+                      <a href={href}>
+                        {t.name}
+                        <span class="visually-hidden"> (opens your email app)</span>
+                      </a>
+                    ) : (
+                      t.name
+                    )}
+                  </h3>
+                  <p class="muted">
+                    <strong>Include:</strong> {t.include}
+                  </p>
+                </div>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </section>
+
+    <aside class="direct band-cobalt" aria-labelledby="direct-title" data-reveal>
+      <h2 id="direct-title" class="title t-2">Email us</h2>
+      {
+        email ? (
+          <>
+            <a class="direct-email" href={`mailto:${email}`}>
+              {email}
+            </a>
+            <p class="muted">
+              Choosing a topic opens your email app with the subject filled in. Please don’t
+              include passwords or sensitive personal information.
+            </p>
+          </>
+        ) : (
+          <>
+            <p class="direct-email">
+              <mark class="placeholder">[Verified contact email]</mark>
+            </p>
+            <p class="muted">
+              Our contact address will be published here as soon as the mailbox has been verified.
+            </p>
+          </>
+        )
+      }
+      <p class="direct-links">
+        Looking for answers first? Try <a class="link" href="/support">Support</a>. For privacy
+        questions, see the <a class="link" href="/policy">Privacy Policy</a>.
+      </p>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .contact-grid {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-5);
+    align-items: start;
+  }
+  @media (min-width: 60rem) {
+    .contact-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+    .direct {
+      position: sticky;
+      top: 6.5rem;
+    }
+  }
+  .topics-title {
+    margin-bottom: var(--space-3);
+  }
+  .topics {
+    border-top: 1.5px solid var(--rule);
+  }
+  .topic {
+    display: grid;
+    grid-template-columns: 2.75rem 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    padding-block: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .topic-star {
+    width: 2.5rem;
+    padding-top: 0.2rem;
+    transition: transform 0.8s var(--spring);
+  }
+  .topic:hover .topic-star {
+    transform: rotate(90deg) scale(1.1);
+  }
+  .topic-name {
+    font-size: var(--step-2);
+    margin-bottom: 0.35rem;
+  }
+  .topic-name a {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.15em;
+    text-decoration-color: var(--tomato);
+  }
+  .topic-name a:hover {
+    text-decoration-color: currentColor;
+  }
+  .topic p {
+    max-width: 48ch;
+  }
+  .direct {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lift);
+  }
+  .direct h2 {
+    color: var(--sun);
+  }
+  .direct-email {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 750;
+    font-size: var(--step-2);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .direct-email :global(mark) {
+    font-family: var(--font-text);
+    font-size: 1rem;
+  }
+  .direct-links {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-on-dark);
+    font-size: var(--step--1);
+  }
+</style>

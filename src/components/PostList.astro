@@ -1,0 +1,145 @@
+---
+import Star from './Star.astro';
+import { postPath, type Post } from '~/lib/journal';
+import { formatDate, isoDate } from '~/lib/dates';
+
+interface Props {
+  posts: Post[];
+  level?: 'h2' | 'h3';
+}
+const { posts, level = 'h3' } = Astro.props;
+const Heading = level;
+
+// Each category gets its own colour so the journal stays lively without photos.
+const looks: Record<string, { bg: string; fg: string }> = {
+  Studio: { bg: 'var(--tomato)', fg: 'var(--ink)' },
+  Guides: { bg: 'var(--mint)', fg: 'var(--ink)' },
+  'Release notes': { bg: 'var(--sun)', fg: 'var(--ink)' },
+  Support: { bg: 'var(--cobalt)', fg: 'var(--paper)' },
+};
+---
+
+<ol class="posts">
+  {
+    posts.map((post) => {
+      const look = looks[post.data.category] ?? looks.Studio!;
+      return (
+        <li class="post" data-reveal>
+          <div class="post-art" style={`background:${look.bg}`} aria-hidden="true">
+            <Star color={look.fg} />
+          </div>
+          <div class="post-body">
+            <Heading class="title post-title">
+              <a href={postPath(post)}>{post.data.title}</a>
+            </Heading>
+            <p class="post-desc">{post.data.description}</p>
+            <p class="post-meta">
+              <span>{post.data.category}</span>
+              <span aria-hidden="true">·</span>
+              <time datetime={isoDate(post.data.publishedAt)}>{formatDate(post.data.publishedAt)}</time>
+            </p>
+          </div>
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .posts {
+    display: grid;
+    border-top: 1.5px solid var(--rule);
+  }
+  .post {
+    position: relative;
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 1.25rem;
+    align-items: center;
+    padding-block: clamp(1.25rem, 1rem + 1vw, 2rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .post::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(var(--gutter) * -0.5);
+    z-index: -1;
+    border-radius: var(--radius);
+    background: color-mix(in srgb, currentColor 5%, transparent);
+    opacity: 0;
+    transform: scaleY(0.85);
+    transition:
+      opacity 0.35s var(--ease-out),
+      transform 0.45s var(--ease-out);
+  }
+  .post {
+    isolation: isolate;
+  }
+  .post:hover::before {
+    opacity: 1;
+    transform: none;
+  }
+  .post:focus-within {
+    outline: 3px solid var(--cobalt);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+  }
+  .post-art {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    transition: transform 0.6s var(--ease-out);
+  }
+  .post-art :global(svg) {
+    width: 46%;
+    transition: transform 0.8s var(--spring);
+  }
+  .post:hover .post-art {
+    transform: rotate(-4deg);
+  }
+  .post:hover .post-art :global(svg) {
+    transform: rotate(90deg);
+  }
+  .post-title {
+    font-size: var(--step-2);
+  }
+  .post-title a {
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 2px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.5s var(--ease-out);
+  }
+  .post:hover .post-title a {
+    background-size: 100% 2px;
+  }
+  .post-title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .post-title a:focus-visible {
+    outline: none;
+  }
+  .post-desc {
+    margin-top: 0.6rem;
+    color: var(--fg-2);
+    max-width: 58ch;
+  }
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: var(--step--1);
+    font-weight: 700;
+  }
+  @media (min-width: 48rem) {
+    .post {
+      grid-template-columns: 8.5rem 1fr;
+      gap: 2.25rem;
+    }
+  }
+</style>

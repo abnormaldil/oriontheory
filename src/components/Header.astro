@@ -1,0 +1,348 @@
+---
+import Logo from './Logo.astro';
+import { primaryNav, site } from '~/data/site';
+
+interface Props {
+  path: string;
+}
+const { path } = Astro.props;
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/" aria-label={`${site.name} — home`}>
+      <Logo variant="lockup" tone="auto" eager class="brand-logo" />
+    </a>
+
+    <div class="bar-end">
+    <nav class="nav" aria-label="Primary">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-label">Menu</span>
+        <span class="nav-toggle-icon" aria-hidden="true"><span></span><span></span></span>
+      </button>
+      <ul id="primary-nav" class="nav-list">
+        {
+          primaryNav.map((item, i) => (
+            <li style={`--n:${i}`}>
+              <a
+                href={item.href}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+                data-nav={item.href.slice(1)}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+        <path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor"></path>
+      </svg>
+    </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement;
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  const label = toggle?.querySelector('.nav-toggle-label');
+
+  // Hairline under the sticky header once the page has scrolled.
+  if (header) {
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Theme toggle: system theme by default; a click picks the opposite of
+  // what is showing and remembers it.
+  const themeBtn = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  if (themeBtn) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const current = () => root.dataset.theme ?? (mq.matches ? 'dark' : 'light');
+    const sync = () => {
+      const dark = current() === 'dark';
+      const text = dark ? 'Switch to light theme' : 'Switch to dark theme';
+      themeBtn.setAttribute('aria-label', text);
+      themeBtn.title = text;
+      themeBtn.classList.toggle('is-dark', dark);
+      document
+        .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+        .forEach((m) => (m.content = root.dataset.theme ? (dark ? '#0b0b0f' : '#ffffff') : m.dataset.default ?? m.content));
+    };
+    const apply = (next: string) => {
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {
+        /* storage unavailable: the choice lasts for this page only */
+      }
+      sync();
+    };
+    themeBtn.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+      if (!doc.startViewTransition || !root.classList.contains('motion')) {
+        apply(next);
+        return;
+      }
+      const r = themeBtn.getBoundingClientRect();
+      root.style.setProperty('--vt-x', `${r.left + r.width / 2}px`);
+      root.style.setProperty('--vt-y', `${r.top + r.height / 2}px`);
+      root.classList.add('theme-vt');
+      doc.startViewTransition(() => apply(next)).finished.finally(() => root.classList.remove('theme-vt'));
+    });
+    mq.addEventListener('change', sync);
+    sync();
+  }
+
+  if (toggle && label) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      label.textContent = open ? 'Close' : 'Menu';
+      root.classList.toggle('nav-open', open);
+    };
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    window.matchMedia('(min-width: 52rem)').addEventListener('change', (e) => {
+      if (e.matches) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--bg);
+    box-shadow: 0 1px 0 transparent;
+    transition: box-shadow 0.3s;
+    view-transition-name: site-header;
+  }
+  .site-header.is-scrolled {
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    min-height: 4.75rem;
+  }
+  .bar-end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--fg);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .theme-toggle:hover {
+    background: var(--surface);
+  }
+  .theme-toggle svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    transition: transform 0.6s var(--spring);
+  }
+  .theme-toggle.is-dark svg {
+    transform: rotate(180deg);
+  }
+  :global(html:not(.js)) .theme-toggle {
+    display: none;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    padding-block: 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+  .brand :global(.brand-logo) {
+    width: auto;
+    height: clamp(2.3rem, 1.9rem + 1vw, 3rem);
+    transition: transform 0.5s var(--ease-out);
+  }
+  .brand:hover :global(.brand-logo) {
+    transform: translateX(2px) skewX(-3deg);
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav-list a {
+    --accent: var(--fg);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 650;
+    font-size: 1rem;
+    color: var(--fg);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  /* Slanted bar under each link, drawn at the wordmark angle */
+  .nav-list a::after {
+    content: '';
+    position: absolute;
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: 0.4rem;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--accent);
+    transform: scaleX(0) skewX(var(--slant));
+    transform-origin: left;
+    transition: transform 0.45s var(--ease-out);
+  }
+  .nav-list a:hover::after,
+  .nav-list a[aria-current='page']::after {
+    transform: scaleX(1) skewX(var(--slant));
+  }
+  .nav-list a[aria-current='page'] {
+    font-weight: 800;
+  }
+  .nav-list a[data-nav='games'] {
+    --accent: var(--tomato);
+  }
+  .nav-list a[data-nav='apps'] {
+    --accent: var(--cobalt);
+  }
+  .nav-list a[data-nav='about'] {
+    --accent: var(--sun);
+  }
+  .nav-list a[data-nav='journal'] {
+    --accent: var(--mint);
+  }
+
+  .nav-toggle {
+    display: none;
+  }
+
+  /* Small screens with JS: full-screen ink menu. Without JS the list wraps. */
+  @media (max-width: 51.99rem) {
+    :global(.js) .nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.95rem;
+      background: var(--fg);
+      color: var(--bg);
+      border: 0;
+      border-radius: var(--radius);
+      font-family: var(--font-display);
+      font-stretch: 112%;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .nav-toggle-icon {
+      display: grid;
+      gap: 5px;
+      width: 1.1rem;
+    }
+    .nav-toggle-icon span {
+      display: block;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.3s var(--ease-out);
+    }
+    :global(.nav-open) .nav-toggle-icon span:first-child {
+      transform: translateY(3.5px) rotate(45deg);
+    }
+    :global(.nav-open) .nav-toggle-icon span:last-child {
+      transform: translateY(-3.5px) rotate(-45deg);
+    }
+    :global(html.nav-open) {
+      overflow: hidden;
+    }
+    :global(.js) .nav-list {
+      display: none;
+      position: fixed;
+      inset: 4.75rem 0 0;
+      flex-direction: column;
+      gap: 0;
+      padding: 1.5rem var(--gutter) 2rem;
+      background: var(--raised);
+      overflow-y: auto;
+    }
+    :global(.js.nav-open) .nav-list {
+      display: flex;
+    }
+    :global(.js) .nav-list li {
+      border-bottom: 1px solid var(--line-on-dark);
+    }
+    :global(.js) .nav-list a {
+      display: flex;
+      width: 100%;
+      min-height: 4.25rem;
+      padding-inline: 0;
+      color: var(--paper);
+      font-size: clamp(2rem, 1.4rem + 3vw, 2.6rem);
+      font-style: italic;
+      font-stretch: 125%;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    :global(.js) .nav-list a::after {
+      left: 0;
+      right: auto;
+      width: 3rem;
+      bottom: 0.9rem;
+    }
+    :global(.js) .nav-list a[data-nav='contact'] {
+      --accent: var(--paper);
+    }
+    :global(.js) .nav-list :focus-visible {
+      outline-color: var(--sun);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      :global(.motion.nav-open) .nav-list li {
+        animation: menu-in 0.55s var(--ease-out) both;
+        animation-delay: calc(var(--n) * 55ms + 40ms);
+      }
+    }
+    :global(html:not(.js)) .bar {
+      flex-wrap: wrap;
+      padding-block: 0.5rem;
+    }
+  }
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.25rem);
+    }
+  }
+</style>

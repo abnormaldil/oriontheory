@@ -1,0 +1,108 @@
+---
+/**
+ * Original pre-release key art for What Flag: a waving mystery flag.
+ * Flag imagery is used only for What Flag, never for the studio identity.
+ * Not a game screenshot or interface mock-up.
+ */
+interface Props {
+  id?: string;
+  /** Hide from assistive tech when the artwork repeats nearby content. */
+  decorative?: boolean;
+}
+const { id = 'wf', decorative = false } = Astro.props;
+---
+
+<svg
+  class="wf-art"
+  viewBox="0 0 400 300"
+  role={decorative ? undefined : 'img'}
+  aria-labelledby={decorative ? undefined : `${id}-t`}
+  aria-hidden={decorative ? 'true' : undefined}
+>
+  {
+    !decorative && (
+      <title id={`${id}-t`}>
+        What Flag pre-release artwork: a red flag with a large question mark waving on a flagpole.
+      </title>
+    )
+  }
+  <ellipse cx="200" cy="284" rx="150" ry="10" fill="rgb(11 11 15 / 0.14)"></ellipse>
+  <!-- sparkles -->
+  <path class="wf-spark s1" d="M330 30C330 42 338 50 350 50C338 50 330 58 330 70C330 58 322 50 310 50C322 50 330 42 330 30Z" fill="var(--ink)"></path>
+  <path class="wf-spark s2" d="M44 196C44 203.8 49.2 209 57 209C49.2 209 44 214.2 44 222C44 214.2 38.8 209 31 209C38.8 209 44 203.8 44 196Z" fill="var(--paper)"></path>
+  <circle cx="352" cy="214" r="7" fill="var(--cobalt)"></circle>
+  <circle cx="60" cy="70" r="5" fill="var(--tomato)"></circle>
+
+  <!-- pole -->
+  <rect x="86" y="36" width="10" height="250" rx="3" fill="var(--ink)"></rect>
+  <circle cx="91" cy="32" r="11" fill="var(--ink)"></circle>
+
+  <!-- flag -->
+  <g class="wf-flag">
+    <path
+      d="M96 48C150 30 200 72 252 56C284 46 304 40 332 50V176C304 166 284 172 252 182C200 198 150 156 96 174Z"
+      fill="var(--tomato)"
+      stroke="var(--ink)"
+      stroke-width="4"
+      stroke-linejoin="round"></path>
+    <path d="M96 48C150 30 200 72 252 56" fill="none" stroke="rgb(255 255 255 / 0.35)" stroke-width="6" stroke-linecap="round"></path>
+    <text x="212" y="152" text-anchor="middle" class="wf-q">?</text>
+  </g>
+</svg>
+
+<style>
+  .wf-art {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .wf-q {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 900;
+    font-size: 132px;
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 4px;
+    paint-order: stroke;
+  }
+  .wf-flag {
+    transform-origin: 96px 110px;
+    transition: transform 0.6s var(--spring);
+  }
+  .wf-spark {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.6s var(--spring);
+  }
+  /* Hover feedback from the art itself or any wrapping .art-hover panel */
+  :global(.art-hover:hover) .wf-flag,
+  .wf-art:hover .wf-flag {
+    transform: skewY(-3deg) scaleX(1.03);
+  }
+  :global(.art-hover:hover) .wf-spark,
+  .wf-art:hover .wf-spark {
+    transform: rotate(45deg) scale(1.25);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .wf-flag {
+      animation: wave 1.6s var(--ease) 0.3s backwards;
+    }
+  }
+  @keyframes wave {
+    0% {
+      transform: scaleX(0.2) skewY(8deg);
+      opacity: 0;
+    }
+    45% {
+      transform: scaleX(1.04) skewY(-4deg);
+      opacity: 1;
+    }
+    70% {
+      transform: scaleX(0.99) skewY(2deg);
+    }
+    100% {
+      transform: none;
+    }
+  }
+</style>

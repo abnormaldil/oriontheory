@@ -1,0 +1,58 @@
+---
+import type { FaqItem } from '~/data/products';
+
+interface Props {
+  items: (FaqItem & { answerHtml?: string })[];
+}
+const { items } = Astro.props;
+---
+
+<div class="faq">
+  {
+    items.map((item) => (
+      <div class="faq-item" data-reveal>
+        <h3>{item.question}</h3>
+        {item.answerHtml ? <p set:html={item.answerHtml} /> : <p>{item.answer}</p>}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    border-top: 1.5px solid var(--rule);
+  }
+  .faq-item {
+    display: grid;
+    gap: 0.5rem;
+    padding-block: 1.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .faq-item h3 {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 750;
+    font-size: var(--step-1);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .faq-item p {
+    color: var(--fg-2);
+    max-width: var(--measure);
+  }
+  .faq-item :global(a) {
+    color: var(--link);
+    font-weight: 600;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+  }
+  .faq-item :global(a:hover) {
+    color: var(--fg);
+  }
+  @media (min-width: 56rem) {
+    .faq-item {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+  }
+</style>

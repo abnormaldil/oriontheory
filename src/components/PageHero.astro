@@ -1,0 +1,76 @@
+---
+/**
+ * Inner-page hero built on the shared "stage": a colour panel with two
+ * panels peeking out behind it. Big H1, intro, optional artwork slot.
+ * No eyebrow labels — the heading speaks for itself.
+ */
+import { stageStyle, stageTones, type StageTone } from '~/lib/stage';
+
+interface Props {
+  title: string;
+  intro?: string;
+  band?: StageTone;
+  size?: 't-6' | 't-5' | 't-4';
+}
+const { title, intro, band = 'cream', size = 't-5' } = Astro.props;
+const hasArt = Astro.slots.has('art');
+const scheme = stageTones[band].scheme;
+---
+
+<section class="stage-hero page-hero">
+  <div class="wrap">
+    <div class="stage" style={stageStyle(band)}>
+      <span class="stage-layer l1" aria-hidden="true"></span>
+      <span class="stage-layer l2" aria-hidden="true"></span>
+      <div class:list={['stage-panel', { 'on-dark': scheme === 'dark', 'on-light': scheme === 'light', 'has-art': hasArt }]}>
+        <div class="stage-copy">
+          <slot name="before" />
+          <h1 class:list={['display', size]}>{title}</h1>
+          {intro && <p class="lede">{intro}</p>}
+          <slot />
+        </div>
+        {hasArt && <div class="page-hero-art"><slot name="art" /></div>}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stage-panel {
+    display: grid;
+    gap: var(--space-4);
+    align-items: end;
+    min-height: clamp(18rem, 12rem + 18vw, 30rem);
+  }
+  .stage-copy {
+    display: grid;
+    justify-items: start;
+    align-content: end;
+  }
+  .stage-copy h1 {
+    max-width: 14ch;
+  }
+  .stage-copy .lede {
+    margin-top: var(--space-3);
+  }
+  .stage-copy :global(.breadcrumbs) {
+    margin-bottom: var(--space-3);
+  }
+  .page-hero-art {
+    width: min(100%, 20rem);
+    justify-self: end;
+    align-self: center;
+  }
+  @media (min-width: 56rem) {
+    .stage-panel.has-art {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    }
+  }
+  @media (max-width: 55.99rem) {
+    .page-hero-art {
+      width: min(55%, 14rem);
+      justify-self: start;
+      order: -1;
+    }
+  }
+</style>

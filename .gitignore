@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+npm-debug.log*
+
+.vercel
+
+# Kept out of the public repository
+# Original logo deliverables (incl. build_final.py and the brand sheet). The
+# site uses the copies in public/brand/ made by `npm run og`, which ARE committed.
+/public/brand/logo deliverables/
+# Internal planning documents
+/oriontheory-master-prompt.md
+/oriontheory-content.md
+# Local editor/agent settings
+/.claude/
