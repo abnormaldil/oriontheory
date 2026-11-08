@@ -21,9 +21,9 @@ export const site = {
 /**
  * Contact routes.
  *
- * The public contact address, set by the owner. It is shown on /contact, used
- * for the topic mailto links, the Organization schema, and as the privacy and
- * terms contact (unless `legal.privacyEmail` is set).
+ * The public contact address, set by the owner. It is shown on /contact and
+ * used for the topic mailto links and the Organization schema. The legal pages
+ * carry their own contact block (src/content/legal/*.md).
  * Setting `verified: false` hides it everywhere and shows a placeholder instead.
  */
 export const contact = {
@@ -35,26 +35,6 @@ export const contact = {
 export function verifiedEmail(): string | null {
   return contact.verified ? contact.email : null;
 }
-
-/**
- * Legal/business details used by /policy and /terms.
- * Every `null` renders as a highlighted bracketed placeholder.
- */
-export const legal = {
-  /** ISO date (YYYY-MM-DD) the reviewed policy is actually published. */
-  privacyLastUpdated: null as string | null,
-  /** ISO date (YYYY-MM-DD) the reviewed terms are actually published. */
-  termsLastUpdated: null as string | null,
-  /** Verified privacy contact address. Falls back to the verified contact email. */
-  privacyEmail: null as string | null,
-  /** Legal or business identity and address, where required. */
-  publisherIdentity: null as string | null,
-  /**
-   * Set to true only after the policy and terms have been completed and reviewed.
-   * While false, both pages carry a visible "draft" notice.
-   */
-  reviewed: false,
-};
 
 export const primaryNav = [
   { href: '/games', label: 'Games' },

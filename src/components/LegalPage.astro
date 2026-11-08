@@ -1,0 +1,282 @@
+---
+/**
+ * Shared reading layout for legal documents (src/content/legal/*.md):
+ * a quiet stage header with the title and dates, a contents list and related
+ * documents beside the text, and the document itself as Markdown prose.
+ * The Markdown is rendered by Astro's own pipeline (no raw HTML injection).
+ */
+import { render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import { getLegalDoc, relatedLegalDocs, shortTitle } from '~/lib/legal';
+import { products, productPath } from '~/data/products';
+import { formatDate, isoDate } from '~/lib/dates';
+import { breadcrumbSchema } from '~/lib/seo';
+import { stageStyle } from '~/lib/stage';
+
+interface Props {
+  /** The document's public path, e.g. "/games/what-flag/policy". */
+  path: string;
+}
+const doc = await getLegalDoc(Astro.props.path);
+const { title, seoTitle, description, path, product: productSlug, effective, updated } = doc.data;
+const { Content, headings } = await render(doc);
+const toc = headings.filter((h) => h.depth === 2);
+const { companion, counterparts } = await relatedLegalDocs(doc);
+
+const product = productSlug ? products.find((p) => p.slug === productSlug) : undefined;
+const crumbs = product
+  ? [
+      { name: 'Home', href: '/' },
+      { name: product.kind === 'game' ? 'Games' : 'Apps', href: product.kind === 'game' ? '/games' : '/apps' },
+      { name: product.name, href: productPath(product) },
+      { name: shortTitle(doc), href: path },
+    ]
+  : null;
+
+const label = (d: NonNullable<typeof companion>) => (d.data.product ? d.data.title.replace(' — ', ' ') : `Orion Theory ${shortTitle(d)}`);
+---
+
+<BaseLayout title={seoTitle} description={description} path={path} schema={crumbs ? [breadcrumbSchema(crumbs)] : []}>
+  <article aria-labelledby="legal-title">
+    <header class="stage-hero">
+      <div class="wrap">
+        <div class="stage" style={stageStyle('mist')}>
+          <span class="stage-layer l1" aria-hidden="true"></span>
+          <span class="stage-layer l2" aria-hidden="true"></span>
+          <div class="stage-panel stage-copy legal-head">
+            {crumbs && <Breadcrumbs items={crumbs} />}
+            <h1 id="legal-title" class="display t-4">{title}</h1>
+            {
+              (effective || updated) && (
+                <dl class="legal-dates">
+                  {effective && (
+                    <div>
+                      <dt>Effective date</dt>
+                      <dd><time datetime={isoDate(effective)}>{formatDate(effective)}</time></dd>
+                    </div>
+                  )}
+                  {updated && (
+                    <div>
+                      <dt>Last updated</dt>
+                      <dd><time datetime={isoDate(updated)}>{formatDate(updated)}</time></dd>
+                    </div>
+                  )}
+                </dl>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap legal-grid">
+      <aside class="legal-aside">
+        {
+          toc.length > 0 && (
+            <nav class="toc" aria-labelledby="toc-title">
+              <details class="toc-details" data-toc>
+                <summary>
+                  <h2 id="toc-title" class="toc-title">Contents</h2>
+                  <span class="toc-chevron" aria-hidden="true" />
+                </summary>
+                <ol>
+                  {toc.map((h) => (
+                    <li>
+                      <a href={`#${h.slug}`}>{h.text}</a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </nav>
+          )
+        }
+        {
+          (companion || counterparts.length > 0) && (
+            <nav class="related" aria-labelledby="related-title">
+              <h2 id="related-title" class="related-title">Related documents</h2>
+              <ul>
+                {companion && (
+                  <li>
+                    <a href={companion.data.path}>{label(companion)}</a>
+                  </li>
+                )}
+                {counterparts.map((d) => (
+                  <li>
+                    <a href={d.data.path}>{label(d)}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )
+        }
+      </aside>
+
+      <div class="prose legal-body">
+        <Content />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  // Contents start open on wide screens (beside the text) and collapsed on
+  // small ones, where they would otherwise push the document far down.
+  const wide = window.matchMedia('(min-width: 64rem)');
+  const sync = () => document.querySelectorAll<HTMLDetailsElement>('[data-toc]').forEach((d) => (d.open = wide.matches));
+  sync();
+  wide.addEventListener('change', sync);
+</script>
+
+<style>
+  .toc summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2.75rem;
+    margin: -0.5rem 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .toc summary::-webkit-details-marker {
+    display: none;
+  }
+  .toc-chevron {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-25%);
+    transition: transform 0.3s var(--ease-out);
+  }
+  .toc-details[open] .toc-chevron {
+    transform: rotate(225deg) translateY(-25%);
+  }
+  .legal-head h1 {
+    max-width: 22ch;
+  }
+  .legal-head :global(.breadcrumbs) {
+    margin-bottom: var(--space-3);
+  }
+  .legal-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2.5rem;
+    width: 100%;
+    margin-top: var(--space-4);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line);
+  }
+  .legal-dates dt {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--fg-2);
+  }
+  .legal-dates dd {
+    margin-top: 0.15rem;
+    font-weight: 700;
+  }
+
+  .legal-grid {
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-4) var(--space-5);
+  }
+  .legal-aside {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+  @media (min-width: 64rem) {
+    .legal-grid {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      gap: var(--space-5);
+    }
+    .legal-aside {
+      position: sticky;
+      top: 6rem;
+      align-self: start;
+      max-height: calc(100vh - 7.5rem);
+      overflow: auto;
+    }
+  }
+  .toc,
+  .related {
+    padding: 1.3rem 1.4rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .toc-title,
+  .related-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-stretch: 118%;
+    font-weight: 800;
+    font-size: var(--step-1);
+  }
+  .toc ol,
+  .related ul {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: grid;
+  }
+  .toc a,
+  .related a {
+    display: block;
+    padding-block: 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.35;
+    text-decoration: none;
+    transition:
+      color 0.2s,
+      transform 0.3s var(--ease-out);
+  }
+  .related a {
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: var(--tomato);
+  }
+  .toc a:hover,
+  .related a:hover {
+    color: var(--link);
+    transform: translateX(3px);
+  }
+
+  /* Reading layout for the document */
+  .legal-body {
+    max-width: 44rem;
+    overflow-wrap: break-word;
+  }
+  .legal-body :global(h2) {
+    margin-top: 2.4em;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--line);
+  }
+  .legal-body > :global(h2:first-child) {
+    margin-top: 0;
+  }
+  .legal-body > :global(p:first-child) {
+    font-size: var(--step-1);
+    line-height: 1.55;
+  }
+  .legal-body :global(h3) {
+    margin-top: 1.8em;
+  }
+  .legal-body :global(hr) {
+    margin-block: var(--space-4) var(--space-3);
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  .legal-body :global(hr + p) {
+    color: var(--fg-2);
+    font-size: 0.95rem;
+  }
+  .legal-body :global(code) {
+    overflow-wrap: anywhere;
+  }
+</style>

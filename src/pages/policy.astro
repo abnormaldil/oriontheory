@@ -1,14 +1,6 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import LegalDocument from '~/components/LegalDocument.astro';
-import { privacyPolicy } from '~/data/legal';
-
+// Text: src/content/legal (path "/policy")
+import LegalPage from '~/components/LegalPage.astro';
 ---
 
-<BaseLayout
-  title="Privacy Policy | Orion Theory"
-  description="How Orion Theory handles information when you visit oriontheory.store or use an Orion Theory app, and how to contact us about privacy."
-  path="/policy"
->
-  <LegalDocument doc={privacyPolicy} sibling={{ href: '/terms', label: 'Terms & Conditions' }} />
-</BaseLayout>
+<LegalPage path="/policy" />

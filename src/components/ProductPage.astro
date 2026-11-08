@@ -11,6 +11,7 @@ import PostList from './PostList.astro';
 import { isAvailable, productPath, releaseLine, type Product } from '~/data/products';
 import { site } from '~/data/site';
 import { getPostsTagged } from '~/lib/journal';
+import { productLegal, shortTitle } from '~/lib/legal';
 import { formatDate } from '~/lib/dates';
 import { absoluteUrl, breadcrumbSchema, organizationId } from '~/lib/seo';
 
@@ -21,6 +22,14 @@ const { product } = Astro.props;
 const path = productPath(product);
 const available = isAvailable(product);
 const related = await getPostsTagged(product.relatedTag);
+// Product-specific legal pages where they exist; otherwise the studio-wide ones.
+const ownLegal = await productLegal(product.slug);
+const privacyLink = ownLegal.privacy
+  ? { href: ownLegal.privacy.data.path, label: shortTitle(ownLegal.privacy) }
+  : { href: '/policy', label: 'Privacy Policy' };
+const termsLink = ownLegal.terms
+  ? { href: ownLegal.terms.data.path, label: shortTitle(ownLegal.terms) }
+  : { href: '/terms', label: 'Terms & Conditions' };
 const listing = product.kind === 'game' ? { name: 'Games', href: '/games' } : { name: 'Apps', href: '/apps' };
 
 const crumbs = [{ name: 'Home', href: '/' }, listing, { name: product.name, href: path }];
@@ -196,8 +205,8 @@ const ogImage = product.slug === 'what-flag' ? '/og/what-flag.png' : site.defaul
 
     <nav class="help" aria-label={`${product.name} help and policies`}>
       <a class="help-link" href={`/support#${product.slug}`}><span>Support</span><span aria-hidden="true">→</span></a>
-      <a class="help-link" href="/policy"><span>Privacy Policy</span><span aria-hidden="true">→</span></a>
-      <a class="help-link" href="/terms"><span>Terms &amp; Conditions</span><span aria-hidden="true">→</span></a>
+      <a class="help-link" href={privacyLink.href}><span>{privacyLink.label}</span><span aria-hidden="true">→</span></a>
+      <a class="help-link" href={termsLink.href}><span>{termsLink.label}</span><span aria-hidden="true">→</span></a>
       <a class="help-link" href="/contact"><span>Contact</span><span aria-hidden="true">→</span></a>
     </nav>
   </section>

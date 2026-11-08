@@ -29,25 +29,26 @@ of the public repository; keep your own copy of `public/brand/logo deliverables/
 ## Routes
 
 `/` · `/games` · `/games/[slug]` (What Flag) · `/apps` · `/apps/[slug]` (none yet) · `/about` ·
-`/journal` · `/journal/[slug]` · `/contact` · `/support` · `/policy` · `/terms` · `/404` ·
+`/journal` · `/journal/[slug]` · `/contact` · `/support` · `/policy` · `/terms` ·
+`/games/what-flag/policy` · `/games/what-flag/terms` · `/404` ·
 `/sitemap.xml` · `/robots.txt`
 
 Canonical URLs never end in a slash. The build emits `policy.html`, `terms.html`, and so on
 (`build.format: 'file'`). Cloudflare Pages, Netlify, GitHub Pages and Vercel (with the included
 `vercel.json`) serve these at `/policy`. If a host returns 404 for `/policy/`, the custom 404 page
-redirects to `/policy`. **After deploying, open `https://oriontheory.store/policy` and
-`/terms` directly before you paste them into Play Console.**
+redirects to `/policy`. **For Play Console, use `https://oriontheory.store/games/what-flag/policy` (What Flag's own
+privacy policy).**
 
 ## Where things live
 
 ```
 src/
-  data/site.ts        Site config, navigation, contact + legal owner inputs
+  data/site.ts        Site config, navigation, contact email
   data/products.ts    Every game and app (typed; "available" requires a Play Store URL),
                       plus the app areas shown on /apps
-  data/legal.ts       Privacy Policy + Terms draft framework
   content/journal/    Journal articles (Markdown). Filename = URL slug
-  content.config.ts   Journal schema (title, description, dates, category, tags, cta, draft)
+  content/legal/      Legal documents (Markdown): studio privacy/terms and What Flag's own
+  content.config.ts   Journal and legal schemas
   components/         Header, Footer, Logo (supplied logo files), OrionMark (animated mark),
                       Star, HeroStack, PageHero, ProductFeature, ProductPage (shared
                       game/app detail template), WhatFlagArt, AppsArt, …
@@ -91,7 +92,8 @@ publish it.
 In `src/data/products.ts`, change the entry to `status: 'available'` and add the verified
 `playStoreUrl`. You can also add a real `icon`, original `screenshots`, and a `releaseDate` (only
 if officially announced). The Google Play buttons and `SoftwareApplication` structured data turn on
-automatically. Also update the policy's scope (§2) to list the app.
+automatically. Review `src/content/legal/what-flag-*.md` against the released build (ads,
+purchase, backup, audience) and update their `updated` date.
 
 ### Add a game or app
 Add an entry to `products` in `src/data/products.ts` with `kind: 'game'` or `kind: 'app'`, a
@@ -103,17 +105,16 @@ announced.
 
 ## Owner checklist: still needs your input
 
-- [x] **Contact email.** `oriontheoryconnect@gmail.com`, set in `src/data/site.ts` (`contact`). It is
-      also used as the privacy and terms contact unless `legal.privacyEmail` is set.
-- [ ] **Privacy Policy** (`src/data/legal.ts` + `legal` in `site.ts`): publication date, privacy
-      email, publisher identity/address, real data practices, SDKs/providers, retention, children's
-      privacy, rights, transfers. It must match the Play Console Data safety form.
-- [ ] **Terms**: publication date, contact, governing law and disputes (legally reviewed),
-      ads/purchases section if applicable, age requirements.
-- [ ] Once both documents are complete and reviewed, set `legal.reviewed = true`. That removes the
-      "Draft" notice and the publisher notes.
-- [ ] **Hosting logs.** Confirm what your host logs (IP addresses, retention) for the website section
-      of the policy.
+- [x] **Contact email.** `oriontheoryconnect@gmail.com`, set in `src/data/site.ts` (`contact`). The
+      legal pages carry their own contact block.
+- [ ] **Legal dates.** Each file in `src/content/legal/` has commented-out `effective:` and
+      `updated:` lines. Set them to the real publication date; until then no date is shown.
+- [ ] **Legal review.** The supplied drafts asked for the governing-law and liability sections (both
+      terms documents) and the publisher's legal entity name to be confirmed with a lawyer. Those
+      drafting notes are not shown on the site.
+- [ ] **What Flag policy accuracy.** The What Flag documents describe the audited build. Update them
+      if ads, purchases, Android backup, notifications or the target audience change, and keep the
+      Play Console Data safety form consistent with them.
 - [ ] **Launch article date.** `meet-orion-theory-what-flag.md` uses `publishedAt: 2026-11-07`.
       Change it if the site goes live on a different day.
 - [ ] Confirm the final store title "What Flag" (content.md marks it as a working title).

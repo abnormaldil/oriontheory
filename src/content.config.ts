@@ -28,4 +28,27 @@ const journal = defineCollection({
   }),
 });
 
-export const collections = { journal };
+/**
+ * Legal documents live in src/content/legal/*.md (owner-supplied text).
+ * Each one is rendered by src/components/LegalPage.astro at its `path`.
+ * `effective` and `updated` are shown only once set — never a placeholder.
+ */
+const legal = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/legal' }),
+  schema: z.object({
+    /** The document's own title, shown as the page H1. */
+    title: z.string(),
+    /** <title> tag. */
+    seoTitle: z.string(),
+    description: z.string().min(50).max(200),
+    /** Public URL, e.g. "/policy" or "/games/what-flag/policy". */
+    path: z.string().startsWith('/'),
+    kind: z.enum(['privacy', 'terms']),
+    /** Product slug for product-specific documents; omit for studio-wide ones. */
+    product: z.string().optional(),
+    effective: z.coerce.date().optional(),
+    updated: z.coerce.date().optional(),
+  }),
+});
+
+export const collections = { journal, legal };

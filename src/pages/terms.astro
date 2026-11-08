@@ -1,14 +1,6 @@
 ---
-import BaseLayout from '~/layouts/BaseLayout.astro';
-import LegalDocument from '~/components/LegalDocument.astro';
-import { termsAndConditions } from '~/data/legal';
-
+// Text: src/content/legal (path "/terms")
+import LegalPage from '~/components/LegalPage.astro';
 ---
 
-<BaseLayout
-  title="Terms & Conditions | Orion Theory"
-  description="The terms that govern use of the Orion Theory website and Orion Theory mobile apps and games."
-  path="/terms"
->
-  <LegalDocument doc={termsAndConditions} sibling={{ href: '/policy', label: 'Privacy Policy' }} />
-</BaseLayout>
+<LegalPage path="/terms" />
