@@ -1,0 +1,26 @@
+---
+// Shown after a contact form is sent without JavaScript (see api/contact.js).
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Message sent | Orion Theory"
+  description="Your message to Orion Theory has been sent."
+  path="/contact/sent"
+  noindex
+  hideCallout
+>
+  <PageHero title="Thanks, your message is on its way." band="mint" size="t-4" intro="We’ll get back to you as soon as we can.">
+    <div class="actions after">
+      <a class="btn" href="/">Back to the home page <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="arrow-link" href="/contact">Send another message <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </PageHero>
+</BaseLayout>
+
+<style>
+  .after {
+    margin-top: var(--space-4);
+  }
+</style>

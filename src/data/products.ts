@@ -13,6 +13,13 @@
  *  - Only add a product once it is real: released, approved, or officially announced.
  */
 
+import type { ImageMetadata } from 'astro';
+import wfLevels from '~/assets/what-flag/screen-levels.png';
+import wfName from '~/assets/what-flag/screen-name-the-country.png';
+import wfMap from '~/assets/what-flag/screen-find-on-map.png';
+import wfPaint from '~/assets/what-flag/screen-paint-the-flag.png';
+import wfCollected from '~/assets/what-flag/screen-country-collected.png';
+
 export type ProductKind = 'game' | 'app';
 
 export interface FaqItem {
@@ -64,6 +71,10 @@ interface ProductBase {
   seo: { title: string; description: string };
   /** Journal posts tagged with this value are shown as related reading. */
   relatedTag: string;
+  /** Real screenshots captured from the product itself — never mock-ups. */
+  gallery?: { image: ImageMetadata; alt: string }[];
+  /** Shown under the gallery, e.g. that the screens come from a build in development. */
+  galleryNote?: string;
 }
 
 interface UnreleasedProduct extends ProductBase {
@@ -76,8 +87,6 @@ interface ReleasedProduct extends ProductBase {
   playStoreUrl: `https://play.google.com/store/apps/details?id=${string}`;
   /** Real app icon (under /public). */
   icon?: ImageAsset;
-  /** Original screenshots only — never mock-ups. */
-  screenshots?: ImageAsset[];
   /** Only if officially announced. ISO date. */
   releaseDate?: string;
 }
@@ -105,6 +114,29 @@ export const products: Product[] = [
     platformLabel: 'Google Play',
     theme: { bg: 'var(--sun)', ink: 'var(--ink)', accent: 'var(--tomato)' },
     artwork: 'what-flag',
+    gallery: [
+      {
+        image: wfLevels,
+        alt: 'What Flag level map: a winding Easy path with level 8 ready to play, plus coins, stars and the World, Missions and Awards buttons.',
+      },
+      {
+        image: wfName,
+        alt: 'Name the Country challenge: a flag is shown and the player spells the country from letter tiles, with Reveal, Remove and Shuffle helpers.',
+      },
+      {
+        image: wfMap,
+        alt: 'Find on the Map challenge: the player has to find Nepal on a world map, with Continent and Zoom helpers.',
+      },
+      {
+        image: wfPaint,
+        alt: 'Paint the Flag challenge: the player colours in the flag of Nepal from a palette of colours.',
+      },
+      {
+        image: wfCollected,
+        alt: 'Level result: Netherlands collected, showing its capital and continent, coins earned and three stars.',
+      },
+    ],
+    galleryNote: 'Screenshots from the game in development. Screens may change before release.',
     faq: [
       {
         question: 'What is What Flag?',

@@ -1,0 +1,32 @@
+---
+// Shown when a contact form sent without JavaScript could not be delivered.
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHero from '~/components/PageHero.astro';
+import { contact } from '~/data/site';
+---
+
+<BaseLayout
+  title="Message not sent | Orion Theory"
+  description="Your message to Orion Theory could not be sent."
+  path="/contact/not-sent"
+  noindex
+  hideCallout
+>
+  <PageHero
+    title="Your message wasn’t sent."
+    band="sun"
+    size="t-4"
+    intro="Something was missing or went wrong. Please go back and check the form, or email us directly."
+  >
+    <div class="actions after">
+      <a class="btn" href="/contact">Back to the form <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="arrow-link" href={`mailto:${contact.email}`}>{contact.email}</a>
+    </div>
+  </PageHero>
+</BaseLayout>
+
+<style>
+  .after {
+    margin-top: var(--space-4);
+  }
+</style>

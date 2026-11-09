@@ -3,6 +3,7 @@
  * Reusable product detail page for games (/games/[slug]) and apps (/apps/[slug]).
  * Everything comes from src/data/products.ts.
  */
+import { Image } from 'astro:assets';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import ProductArt from './ProductArt.astro';
@@ -146,13 +147,22 @@ const ogImage = product.slug === 'what-flag' ? '/og/what-flag.png' : site.defaul
   </section>
 
   {
-    available && product.screenshots && product.screenshots.length > 0 && (
-      <section class="wrap section-sm" aria-labelledby="screens-title">
-        <h2 id="screens-title" class="display t-3">Screenshots</h2>
-        <ul class="screens">
-          {product.screenshots.map((s) => (
-            <li>
-              <img src={s.src} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
+    product.gallery && product.gallery.length > 0 && (
+      <section class="gallery-sec" aria-labelledby="screens-title">
+        <div class="wrap gallery-head" data-reveal>
+          <h2 id="screens-title" class="display t-3">Screenshots</h2>
+          {product.galleryNote && <p class="muted">{product.galleryNote}</p>}
+        </div>
+        <ul class="wrap screens" role="list" tabindex="0" aria-label={`${product.name} screenshots`}>
+          {product.gallery.map((s, i) => (
+            <li style={`--i:${i}`}>
+              <Image
+                src={s.image}
+                alt={s.alt}
+                widths={[280, 420, 640]}
+                sizes="(min-width: 64rem) 15rem, 60vw"
+                loading="lazy"
+              />
             </li>
           ))}
         </ul>
@@ -243,8 +253,9 @@ const ogImage = product.slug === 'what-flag' ? '/og/what-flag.png' : site.defaul
     gap: 0.75rem;
     justify-items: center;
   }
-  .p-hero-art :global(svg),
-  .p-hero-art :global(img) {
+  .p-hero-art > :global(svg),
+  .p-hero-art > :global(img),
+  .p-hero-art > :global(.wf-art) {
     width: min(100%, 36rem);
   }
   .art-note {
@@ -303,16 +314,53 @@ const ogImage = product.slug === 'what-flag' ? '/og/what-flag.png' : site.defaul
     }
   }
 
-  .screens {
-    display: flex;
-    gap: var(--space-3);
-    overflow-x: auto;
-    margin-top: var(--space-4);
+  /* Screenshots: a horizontal strip of real game screens */
+  .gallery-sec {
+    padding-bottom: var(--space-5);
   }
-  .screens img {
-    width: auto;
-    max-height: 32rem;
+  .gallery-head {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  @media (min-width: 58rem) {
+    .gallery-head {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+      gap: var(--space-5);
+    }
+  }
+  .screens {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(15rem, 62vw);
+    gap: clamp(0.9rem, 0.5rem + 1.5vw, 1.75rem);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    padding-block: 0.5rem 1.25rem;
     border-radius: var(--radius);
+  }
+  .screens li {
+    scroll-snap-align: start;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .screens li:nth-child(even) {
+    transform: translateY(1.5rem);
+  }
+  .screens li:hover {
+    transform: translateY(-0.4rem);
+  }
+  .screens li:nth-child(even):hover {
+    transform: translateY(1.1rem);
+  }
+  .screens :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 1.4rem;
+    box-shadow: var(--shadow-panel);
   }
 
   /* Release: an ink panel that opens out to full width on scroll */

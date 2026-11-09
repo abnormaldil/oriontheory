@@ -1,108 +1,169 @@
 ---
 /**
- * Original pre-release key art for What Flag: a waving mystery flag.
- * Flag imagery is used only for What Flag, never for the studio identity.
- * Not a game screenshot or interface mock-up.
+ * What Flag key art, built from the game's own design pack
+ * (scripts/import-what-flag-assets.mjs): the app icon's globe background,
+ * its explorer character leaning out of the icon frame, and three of the
+ * game's 3D props. Flag imagery is used only for What Flag.
  */
+import { Image } from 'astro:assets';
+import iconBackground from '~/assets/what-flag/icon-background.jpg';
+import iconCharacter from '~/assets/what-flag/icon-character.png';
+import propCoin from '~/assets/what-flag/prop-coin.png';
+import propStar from '~/assets/what-flag/prop-star.png';
+import propPin from '~/assets/what-flag/prop-map-pin.png';
+
 interface Props {
+  /** Kept for API compatibility with ProductArt. */
   id?: string;
   /** Hide from assistive tech when the artwork repeats nearby content. */
   decorative?: boolean;
+  /** Load immediately (above the fold). */
+  eager?: boolean;
 }
-const { id = 'wf', decorative = false } = Astro.props;
+const { decorative = false, eager = false } = Astro.props;
+const loading = eager ? 'eager' : 'lazy';
+const sizes = '(min-width: 64rem) 30rem, 80vw';
 ---
 
-<svg
+<div
   class="wf-art"
-  viewBox="0 0 400 300"
   role={decorative ? undefined : 'img'}
-  aria-labelledby={decorative ? undefined : `${id}-t`}
+  aria-label={decorative ? undefined : 'What Flag app icon: a young explorer in a blue cap holding a flag in front of a globe, with a big yellow question mark.'}
   aria-hidden={decorative ? 'true' : undefined}
 >
-  {
-    !decorative && (
-      <title id={`${id}-t`}>
-        What Flag pre-release artwork: a red flag with a large question mark waving on a flagpole.
-      </title>
-    )
-  }
-  <ellipse cx="200" cy="284" rx="150" ry="10" fill="rgb(11 11 15 / 0.14)"></ellipse>
-  <!-- sparkles -->
-  <path class="wf-spark s1" d="M330 30C330 42 338 50 350 50C338 50 330 58 330 70C330 58 322 50 310 50C322 50 330 42 330 30Z" fill="var(--ink)"></path>
-  <path class="wf-spark s2" d="M44 196C44 203.8 49.2 209 57 209C49.2 209 44 214.2 44 222C44 214.2 38.8 209 31 209C38.8 209 44 203.8 44 196Z" fill="var(--paper)"></path>
-  <circle cx="352" cy="214" r="7" fill="var(--cobalt)"></circle>
-  <circle cx="60" cy="70" r="5" fill="var(--tomato)"></circle>
-
-  <!-- pole -->
-  <rect x="86" y="36" width="10" height="250" rx="3" fill="var(--ink)"></rect>
-  <circle cx="91" cy="32" r="11" fill="var(--ink)"></circle>
-
-  <!-- flag -->
-  <g class="wf-flag">
-    <path
-      d="M96 48C150 30 200 72 252 56C284 46 304 40 332 50V176C304 166 284 172 252 182C200 198 150 156 96 174Z"
-      fill="var(--tomato)"
-      stroke="var(--ink)"
-      stroke-width="4"
-      stroke-linejoin="round"></path>
-    <path d="M96 48C150 30 200 72 252 56" fill="none" stroke="rgb(255 255 255 / 0.35)" stroke-width="6" stroke-linecap="round"></path>
-    <text x="212" y="152" text-anchor="middle" class="wf-q">?</text>
-  </g>
-</svg>
+  <div class="wf-tile">
+    <Image src={iconBackground} alt="" widths={[360, 640, 900]} sizes={sizes} loading={loading} class="wf-layer" />
+  </div>
+  <div class="wf-pop">
+    <Image src={iconCharacter} alt="" widths={[360, 640, 900]} sizes={sizes} loading={loading} class="wf-layer wf-character" />
+  </div>
+  <Image src={propStar} alt="" width={160} loading={loading} class="wf-prop wf-star" />
+  <Image src={propCoin} alt="" width={160} loading={loading} class="wf-prop wf-coin" />
+  <Image src={propPin} alt="" width={160} loading={loading} class="wf-prop wf-pin" />
+</div>
 
 <style>
   .wf-art {
+    position: relative;
     width: 100%;
+    aspect-ratio: 1;
+    --tile-inset: 13%;
+    --tile-radius: 22%;
+  }
+  .wf-tile,
+  .wf-pop {
+    position: absolute;
+    inset: var(--tile-inset);
+  }
+  .wf-tile {
+    overflow: hidden;
+    border-radius: var(--tile-radius);
+    box-shadow:
+      0 2px 0 rgb(11 11 15 / 0.06),
+      0 28px 50px -22px rgb(11 11 15 / 0.55);
+    transition: transform 0.7s var(--ease-out);
+  }
+  /* The character shares the tile's box but may rise out of its top edge;
+     its bottom corners are clipped to the tile's rounded corners. */
+  .wf-pop {
+    clip-path: inset(-40% 0 0 0 round 0 0 var(--tile-radius) var(--tile-radius));
+    pointer-events: none;
+  }
+  .wf-layer {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .wf-character {
+    transform: translateY(-6%) scale(1.03);
+    transform-origin: 50% 100%;
+    transition: transform 0.7s var(--ease-out);
+  }
+  .wf-prop {
+    position: absolute;
     height: auto;
-    overflow: visible;
+    filter: drop-shadow(0 12px 14px rgb(11 11 15 / 0.28));
+    transition: transform 0.8s var(--spring);
   }
-  .wf-q {
-    font-family: var(--font-display);
-    font-stretch: 125%;
-    font-weight: 900;
-    font-size: 132px;
-    fill: var(--paper);
-    stroke: var(--ink);
-    stroke-width: 4px;
-    paint-order: stroke;
+  .wf-star {
+    width: 21%;
+    right: 2%;
+    top: 4%;
+    transform: rotate(12deg);
   }
-  .wf-flag {
-    transform-origin: 96px 110px;
-    transition: transform 0.6s var(--spring);
+  .wf-coin {
+    width: 22%;
+    left: 1%;
+    bottom: 6%;
+    transform: rotate(-10deg);
   }
-  .wf-spark {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition: transform 0.6s var(--spring);
+  .wf-pin {
+    width: 17%;
+    left: 3%;
+    top: 14%;
+    transform: rotate(-8deg);
   }
-  /* Hover feedback from the art itself or any wrapping .art-hover panel */
-  :global(.art-hover:hover) .wf-flag,
-  .wf-art:hover .wf-flag {
-    transform: skewY(-3deg) scaleX(1.03);
+
+  /* Hover (from the art or any wrapping .art-hover): the explorer leans out
+     and the props drift outwards. */
+  :global(.art-hover:hover) .wf-character,
+  .wf-art:hover .wf-character {
+    transform: translateY(-11%) scale(1.06);
   }
-  :global(.art-hover:hover) .wf-spark,
-  .wf-art:hover .wf-spark {
-    transform: rotate(45deg) scale(1.25);
+  :global(.art-hover:hover) .wf-tile,
+  .wf-art:hover .wf-tile {
+    transform: scale(0.985);
   }
+  :global(.art-hover:hover) .wf-star,
+  .wf-art:hover .wf-star {
+    transform: translate(8%, -10%) rotate(32deg) scale(1.08);
+  }
+  :global(.art-hover:hover) .wf-coin,
+  .wf-art:hover .wf-coin {
+    transform: translate(-10%, 6%) rotate(-28deg) scale(1.06);
+  }
+  :global(.art-hover:hover) .wf-pin,
+  .wf-art:hover .wf-pin {
+    transform: translate(-12%, -8%) rotate(-18deg);
+  }
+
+  /* One-time entrance: the tile settles, the explorer rises, props pop in. */
   @media (prefers-reduced-motion: no-preference) {
-    :global(.motion) .wf-flag {
-      animation: wave 1.6s var(--ease) 0.3s backwards;
+    :global(.motion) .wf-tile {
+      animation: wf-tile-in 0.9s var(--ease-out) 0.15s backwards;
+    }
+    :global(.motion) .wf-character {
+      animation: wf-rise 1s var(--ease-out) 0.35s backwards;
+    }
+    :global(.motion) .wf-prop {
+      animation: wf-pop 0.8s var(--spring) backwards;
+    }
+    :global(.motion) .wf-pin {
+      animation-delay: 0.6s;
+    }
+    :global(.motion) .wf-star {
+      animation-delay: 0.72s;
+    }
+    :global(.motion) .wf-coin {
+      animation-delay: 0.84s;
     }
   }
-  @keyframes wave {
-    0% {
-      transform: scaleX(0.2) skewY(8deg);
+  @keyframes wf-tile-in {
+    from {
       opacity: 0;
+      transform: translateY(8%) rotate(-4deg) scale(0.94);
     }
-    45% {
-      transform: scaleX(1.04) skewY(-4deg);
-      opacity: 1;
+  }
+  @keyframes wf-rise {
+    from {
+      transform: translateY(14%) scale(1.03);
     }
-    70% {
-      transform: scaleX(0.99) skewY(2deg);
-    }
-    100% {
-      transform: none;
+  }
+  @keyframes wf-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.3) rotate(-40deg);
     }
   }
 </style>

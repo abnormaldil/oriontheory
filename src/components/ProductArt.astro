@@ -14,7 +14,7 @@ const art = product.artwork;
 
 {
   art === 'what-flag' ? (
-    <WhatFlagArt id={id ?? `art-${product.slug}`} />
+    <WhatFlagArt id={id ?? `art-${product.slug}`} eager={eager} />
   ) : (
     <img
       src={art.src}

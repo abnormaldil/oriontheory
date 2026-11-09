@@ -87,8 +87,9 @@ const kindLabel = product.kind === 'game' ? 'Mobile game' : 'Mobile app';
     padding: clamp(1rem, 0.5rem + 3vw, 3.5rem);
     min-height: 16rem;
   }
-  .feature-art :global(svg),
-  .feature-art :global(img) {
+  .feature-art > :global(svg),
+  .feature-art > :global(img),
+  .feature-art > :global(.wf-art) {
     width: min(100%, 34rem);
   }
   .feature-info {

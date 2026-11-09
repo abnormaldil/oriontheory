@@ -1,0 +1,898 @@
+---
+/**
+ * Contact forms: a topic picker and one specialised form per topic, all
+ * defined in src/data/contact-forms.js. Submissions go to /api/contact,
+ * which emails them to the studio inbox.
+ *
+ * With JavaScript: one form at a time, inline validation, screenshot
+ * previews (large images are shrunk before upload), and an in-page result.
+ * Without JavaScript: every form is shown and posts normally; the function
+ * redirects to /contact/sent or /contact/not-sent.
+ */
+import Star from './Star.astro';
+import { contactForms, acceptAttr } from '~/data/contact-forms.js';
+import { LIMITS } from '~/data/contact-forms.js';
+---
+
+<section class="cf" aria-labelledby="topics-title" data-contact>
+  <h2 id="topics-title" class="title t-2 cf-title">Choose a topic</h2>
+
+  <div class="topic-picker" role="radiogroup" aria-labelledby="topics-title">
+    {
+      contactForms.map((f, i) => (
+        <label class="topic-card" style={`--c:${f.color}`}>
+          <input type="radio" name="contact-topic" value={f.id} checked={i === 0} />
+          <span class="tc-star" aria-hidden="true">
+            <Star color={f.color} />
+          </span>
+          <span class="tc-name">{f.name}</span>
+          <span class="tc-intro">{f.intro}</span>
+        </label>
+      ))
+    }
+  </div>
+
+  {
+    contactForms.map((f) => (
+      <form
+        id={`form-${f.id}`}
+        class="cform"
+        data-form={f.id}
+        action="/api/contact"
+        method="post"
+        enctype="multipart/form-data"
+        aria-labelledby={`${f.id}-title`}
+      >
+        <div class="cform-head">
+          <h3 id={`${f.id}-title`} class="display cform-title">
+            {f.name}
+          </h3>
+          <p class="muted">
+            <strong>Include:</strong> {f.intro}
+          </p>
+        </div>
+
+        <input type="hidden" name="topic" value={f.id} />
+        <input type="hidden" name="started" value="" />
+        <div class="hp" aria-hidden="true">
+          <label>
+            Leave this field empty
+            <input type="text" name="nickname" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="fields">
+          {f.fields.map((field) => {
+            const id = `${f.id}-${field.name}`;
+            const hintId = field.hint ? `${id}-hint` : undefined;
+            const errId = `${id}-error`;
+            const describedBy = [hintId, errId].filter(Boolean).join(' ');
+            const optional = !field.required && field.type !== 'files' && field.type !== 'checkbox';
+
+            if (field.type === 'checkbox') {
+              return (
+                <div class:list={['field', 'field-check', { wide: field.wide }]} data-field={field.name}>
+                  <input id={id} type="checkbox" name={field.name} value="yes" required={field.required} aria-describedby={describedBy} />
+                  <label for={id}>{field.label}</label>
+                  <p class="field-error" id={errId} hidden />
+                </div>
+              );
+            }
+
+            if (field.type === 'files') {
+              return (
+                <div class="field field-files wide" data-field={field.name} data-max={field.max} data-accept={(field.accept ?? []).join(',')}>
+                  <span class="field-label" id={`${id}-label`}>
+                    {field.label} <span class="opt">(optional)</span>
+                  </span>
+                  <div class="drop">
+                    <input
+                      id={id}
+                      class="file-input"
+                      type="file"
+                      name={field.name}
+                      multiple
+                      accept={acceptAttr(field)}
+                      aria-describedby={describedBy}
+                    />
+                    <label for={id} class="btn btn-paper drop-btn">
+                      <span aria-hidden="true">＋</span> Add files
+                    </label>
+                    <span class="drop-text">or drop them here</span>
+                  </div>
+                  {field.hint && (
+                    <p class="field-hint" id={hintId}>
+                      {field.hint}
+                    </p>
+                  )}
+                  <ul class="file-list" aria-live="polite" aria-label={`Attached ${field.label.toLowerCase()}`} />
+                  <p class="field-error" id={errId} hidden />
+                </div>
+              );
+            }
+
+            return (
+              <div class:list={['field', { wide: field.wide || field.type === 'textarea' }]} data-field={field.name}>
+                <label for={id} class="field-label">
+                  {field.label} {optional && <span class="opt">(optional)</span>}
+                </label>
+                {field.type === 'select' ? (
+                  <select id={id} name={field.name} required={field.required} aria-describedby={describedBy}>
+                    <option value="">Choose one…</option>
+                    {(field.options ?? []).map((o) => (
+                      <option value={o}>{o}</option>
+                    ))}
+                  </select>
+                ) : field.type === 'textarea' ? (
+                  <textarea
+                    id={id}
+                    name={field.name}
+                    rows={field.rows ?? 5}
+                    required={field.required}
+                    maxlength={LIMITS.textareaMax}
+                    placeholder={field.placeholder}
+                    aria-describedby={describedBy}
+                  />
+                ) : (
+                  <input
+                    id={id}
+                    type={field.type as astroHTML.JSX.HTMLInputTypeAttribute}
+                    name={field.name}
+                    required={field.required}
+                    maxlength={LIMITS.textMax}
+                    placeholder={field.placeholder}
+                    autocomplete={field.autocomplete}
+                    inputmode={field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : undefined}
+                    aria-describedby={describedBy}
+                  />
+                )}
+                {field.hint && (
+                  <p class="field-hint" id={hintId}>
+                    {field.hint}
+                  </p>
+                )}
+                <p class="field-error" id={errId} hidden />
+              </div>
+            );
+          })}
+        </div>
+
+        <div class="cform-foot">
+          <p class="consent">
+            We use these details only to reply to you. Please don’t include passwords or payment
+            details. See our <a class="link" href="/policy">Privacy Policy</a>.
+          </p>
+          <div class="submit-row">
+            <button class="btn btn-tomato submit" type="submit">
+              <span class="submit-label">Send message</span>
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="form-status" role="status" aria-live="polite" />
+          </div>
+        </div>
+      </form>
+    ))
+  }
+
+  <div class="cf-done" hidden tabindex="-1" data-done>
+    <span class="done-star" aria-hidden="true"><Star color="var(--mint)" /></span>
+    <h3 class="display t-3">Thanks, your message is on its way.</h3>
+    <p class="lede" data-done-text>We’ll get back to you as soon as we can.</p>
+    <button class="btn" type="button" data-again>Send another message</button>
+  </div>
+</section>
+
+<script>
+  import { LIMITS } from '~/data/contact-forms.js';
+
+  const root = document.querySelector<HTMLElement>('[data-contact]');
+  if (root) init(root);
+
+  type Attached = { file: File; url: string | null };
+
+  function init(root: HTMLElement) {
+    root.classList.add('is-enhanced');
+    const forms = [...root.querySelectorAll<HTMLFormElement>('form[data-form]')];
+    const radios = [...root.querySelectorAll<HTMLInputElement>('input[name="contact-topic"]')];
+    const done = root.querySelector<HTMLElement>('[data-done]')!;
+    const doneText = root.querySelector<HTMLElement>('[data-done-text]')!;
+    const files = new Map<HTMLFormElement, Attached[]>();
+
+    const show = (id: string, focus = false) => {
+      done.hidden = true;
+      for (const f of forms) {
+        const on = f.dataset.form === id;
+        f.hidden = !on;
+        if (on) {
+          const started = f.querySelector<HTMLInputElement>('input[name="started"]')!;
+          if (!started.value) started.value = String(Date.now());
+          if (focus) f.querySelector<HTMLElement>('input:not([type=hidden]):not([tabindex="-1"]), select, textarea')?.focus();
+        }
+      }
+      for (const r of radios) r.checked = r.value === id;
+    };
+
+    // Topic from the URL (e.g. /contact#bug-report), else the first one.
+    const fromHash = () => {
+      const id = decodeURIComponent(location.hash.slice(1));
+      return forms.some((f) => f.dataset.form === id) ? id : null;
+    };
+    show(fromHash() ?? radios.find((r) => r.checked)?.value ?? forms[0].dataset.form!);
+    window.addEventListener('hashchange', () => {
+      const id = fromHash();
+      if (id) show(id);
+    });
+    for (const r of radios) {
+      r.addEventListener('change', () => {
+        show(r.value);
+        history.replaceState(null, '', `#${r.value}`);
+      });
+    }
+
+    for (const form of forms) {
+      form.noValidate = true;
+      files.set(form, []);
+      const fileField = form.querySelector<HTMLElement>('.field-files');
+      if (fileField) setupFiles(form, fileField);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        submit(form);
+      });
+      // Clear a field's error as soon as it is edited.
+      form.addEventListener('input', (e) => {
+        const field = (e.target as HTMLElement).closest<HTMLElement>('.field');
+        if (field) setError(field, '');
+      });
+    }
+
+    root.querySelector('[data-again]')?.addEventListener('click', () => {
+      const id = radios.find((r) => r.checked)?.value ?? forms[0].dataset.form!;
+      show(id, true);
+    });
+
+    // ---------------------------------------------------------------- files
+    function setupFiles(form: HTMLFormElement, field: HTMLElement) {
+      const input = field.querySelector<HTMLInputElement>('input[type=file]')!;
+      const drop = field.querySelector<HTMLElement>('.drop')!;
+      input.addEventListener('change', () => {
+        add(form, field, [...(input.files ?? [])]);
+        input.value = '';
+      });
+      for (const type of ['dragenter', 'dragover']) {
+        drop.addEventListener(type, (e) => {
+          e.preventDefault();
+          drop.classList.add('is-over');
+        });
+      }
+      for (const type of ['dragleave', 'drop']) {
+        drop.addEventListener(type, () => drop.classList.remove('is-over'));
+      }
+      drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        add(form, field, [...((e as DragEvent).dataTransfer?.files ?? [])]);
+      });
+      // Paste a screenshot straight into the form.
+      form.addEventListener('paste', (e) => {
+        const pasted = [...(e.clipboardData?.files ?? [])];
+        if (pasted.length) {
+          e.preventDefault();
+          add(form, field, pasted);
+        }
+      });
+    }
+
+    async function add(form: HTMLFormElement, field: HTMLElement, incoming: File[]) {
+      const list = files.get(form)!;
+      const max = Number(field.dataset.max ?? 4);
+      const accept = (field.dataset.accept ?? '').split(',');
+      const status = form.querySelector<HTMLElement>('.form-status')!;
+      setError(field, '');
+      for (const raw of incoming) {
+        if (list.length >= max) {
+          setError(field, `You can attach up to ${max} files.`);
+          break;
+        }
+        const type = (raw.type || '').toLowerCase();
+        if (!accept.includes(type)) {
+          setError(field, `“${raw.name}” isn’t a supported file type.`);
+          continue;
+        }
+        status.textContent = 'Preparing image…';
+        const file = await shrink(raw);
+        const total = list.reduce((n, a) => n + a.file.size, 0) + file.size;
+        if (total > LIMITS.maxTotalBytes) {
+          setError(field, `“${raw.name}” would make the attachments too large (${mb(LIMITS.maxTotalBytes)} in total).`);
+          continue;
+        }
+        list.push({ file, url: file.type.startsWith('image/') && !/hei[cf]/.test(file.type) ? URL.createObjectURL(file) : null });
+      }
+      status.textContent = '';
+      render(form, field);
+    }
+
+    function render(form: HTMLFormElement, field: HTMLElement) {
+      const list = files.get(form)!;
+      const ul = field.querySelector<HTMLUListElement>('.file-list')!;
+      ul.replaceChildren(
+        ...list.map((a, i) => {
+          const li = document.createElement('li');
+          li.className = 'file-item';
+          const thumb = document.createElement(a.url ? 'img' : 'span');
+          thumb.className = 'file-thumb';
+          if (a.url) Object.assign(thumb, { src: a.url, alt: '' });
+          else thumb.textContent = a.file.type === 'application/pdf' ? 'PDF' : 'IMG';
+          const meta = document.createElement('span');
+          meta.className = 'file-meta';
+          meta.innerHTML = '<span class="file-name"></span><span class="file-size"></span>';
+          meta.querySelector('.file-name')!.textContent = a.file.name;
+          meta.querySelector('.file-size')!.textContent = mb(a.file.size);
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'file-remove';
+          remove.setAttribute('aria-label', `Remove ${a.file.name}`);
+          remove.textContent = '×';
+          remove.addEventListener('click', () => {
+            if (a.url) URL.revokeObjectURL(a.url);
+            list.splice(i, 1);
+            render(form, field);
+            field.querySelector<HTMLElement>('.drop-btn')?.focus();
+          });
+          li.append(thumb, meta, remove);
+          return li;
+        }),
+      );
+    }
+
+    /** Shrink large photos/screenshots in the browser so uploads stay small. */
+    async function shrink(file: File): Promise<File> {
+      const resizable = ['image/png', 'image/jpeg', 'image/webp'].includes(file.type);
+      if (!resizable) return file;
+      try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, LIMITS.maxImageSide / Math.max(bitmap.width, bitmap.height));
+        if (scale === 1 && file.size <= LIMITS.compressAboveBytes) {
+          bitmap.close();
+          return file;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        const ctx = canvas.getContext('2d')!;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.86));
+        if (!blob || blob.size >= file.size) return file;
+        return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+      } catch {
+        return file;
+      }
+    }
+
+    // ------------------------------------------------------------ validation
+    function setError(field: HTMLElement, message: string) {
+      const err = field.querySelector<HTMLElement>('.field-error');
+      const control = field.querySelector<HTMLElement>('input:not([type=hidden]), select, textarea');
+      if (!err) return;
+      err.textContent = message;
+      err.hidden = !message;
+      field.classList.toggle('has-error', !!message);
+      if (control) {
+        if (message) control.setAttribute('aria-invalid', 'true');
+        else control.removeAttribute('aria-invalid');
+      }
+    }
+
+    function validate(form: HTMLFormElement): HTMLElement[] {
+      const bad: HTMLElement[] = [];
+      for (const field of form.querySelectorAll<HTMLElement>('.field')) {
+        const control = field.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          'input:not([type=hidden]):not([type=file]), select, textarea',
+        );
+        if (!control) continue;
+        let message = '';
+        const v = control.validity;
+        if (control instanceof HTMLInputElement && control.type === 'checkbox') {
+          if (control.required && !control.checked) message = 'Please confirm this to continue.';
+        } else if (v.valueMissing || (control.required && !control.value.trim())) message = 'Please fill this in.';
+        else if (v.typeMismatch && control.type === 'email') message = 'Please enter a valid email address, like name@example.com.';
+        else if (v.typeMismatch && control.type === 'url') message = 'Please enter a full web address, starting with https://';
+        else if (v.tooLong) message = 'This is too long.';
+        setError(field, message);
+        if (message) bad.push(field);
+      }
+      return bad;
+    }
+
+    // --------------------------------------------------------------- submit
+    async function submit(form: HTMLFormElement) {
+      const status = form.querySelector<HTMLElement>('.form-status')!;
+      const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      const label = button.querySelector<HTMLElement>('.submit-label')!;
+      if (button.disabled) return;
+
+      const bad = validate(form);
+      if (bad.length) {
+        status.textContent = bad.length === 1 ? 'Please check the highlighted field.' : `Please check the ${bad.length} highlighted fields.`;
+        status.dataset.tone = 'error';
+        bad[0].querySelector<HTMLElement>('input, select, textarea')?.focus();
+        return;
+      }
+
+      const data = new FormData(form);
+      data.delete('attachments');
+      for (const a of files.get(form) ?? []) data.append('attachments', a.file, a.file.name);
+
+      button.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      label.textContent = 'Sending…';
+      status.textContent = '';
+      delete status.dataset.tone;
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { Accept: 'application/json', 'X-Requested-With': 'fetch' },
+        });
+        let body: { ok?: boolean; message?: string; errors?: Record<string, string> } = {};
+        try {
+          body = await res.json();
+        } catch {
+          body = { ok: false };
+        }
+        if (res.ok && body.ok) {
+          const email = (form.querySelector<HTMLInputElement>('input[name="email"]')?.value ?? '').trim();
+          doneText.textContent = email
+            ? `We’ll reply to ${email} as soon as we can.`
+            : 'Thanks for taking the time to write to us.';
+          for (const a of files.get(form) ?? []) if (a.url) URL.revokeObjectURL(a.url);
+          files.set(form, []);
+          form.reset();
+          form.querySelector<HTMLInputElement>('input[name="started"]')!.value = String(Date.now());
+          const fileField = form.querySelector<HTMLElement>('.field-files');
+          if (fileField) render(form, fileField);
+          form.hidden = true;
+          done.hidden = false;
+          done.focus();
+          return;
+        }
+        if (body.errors) {
+          let first: HTMLElement | null = null;
+          for (const [name, message] of Object.entries(body.errors)) {
+            const field = form.querySelector<HTMLElement>(`.field[data-field="${CSS.escape(name)}"]`);
+            if (field) {
+              setError(field, message);
+              first ??= field;
+            }
+          }
+          first?.querySelector<HTMLElement>('input, select, textarea')?.focus();
+        }
+        status.textContent =
+          body.message ?? 'Your message couldn’t be sent. Please try again, or email oriontheoryconnect@gmail.com.';
+        status.dataset.tone = 'error';
+      } catch {
+        status.textContent =
+          'We couldn’t reach the server. Check your connection and try again, or email oriontheoryconnect@gmail.com.';
+        status.dataset.tone = 'error';
+      } finally {
+        button.disabled = false;
+        form.removeAttribute('aria-busy');
+        label.textContent = 'Send message';
+      }
+    }
+  }
+
+  function mb(bytes: number) {
+    return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+</script>
+
+<style>
+  .cf-title {
+    margin-bottom: var(--space-3);
+  }
+
+  /* Topic picker: native radios styled as cards */
+  .topic-picker {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: var(--space-4);
+  }
+  @media (min-width: 40rem) {
+    .topic-picker {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 72rem) {
+    .topic-picker {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  :global(html:not(.js)) .topic-picker {
+    display: none;
+  }
+  .topic-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.15rem 0.75rem;
+    align-content: start;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    transition:
+      background-color 0.25s,
+      box-shadow 0.25s,
+      transform 0.35s var(--ease-out);
+  }
+  .topic-card:hover {
+    transform: translateY(-2px);
+  }
+  .topic-card input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .topic-card:has(input:checked) {
+    background: var(--bg);
+    box-shadow:
+      inset 0 0 0 2px var(--fg),
+      var(--shadow-panel);
+  }
+  .topic-card:has(input:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .tc-star {
+    grid-row: span 2;
+    align-self: start;
+    width: 1.5rem;
+    padding-top: 0.15rem;
+  }
+  .tc-star :global(svg) {
+    transition: transform 0.7s var(--spring);
+  }
+  .topic-card:has(input:checked) .tc-star :global(svg) {
+    transform: rotate(90deg) scale(1.12);
+  }
+  .tc-name {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 750;
+    font-size: var(--step-1);
+    line-height: 1.2;
+  }
+  .tc-intro {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--fg-2);
+  }
+  /* On phones the chosen form repeats this text, so keep the cards short. */
+  @media (max-width: 39.99rem) {
+    .topic-card {
+      align-items: center;
+      padding-block: 0.8rem;
+    }
+    .tc-star {
+      grid-row: auto;
+      padding-top: 0;
+    }
+    .tc-intro {
+      display: none;
+    }
+  }
+
+  /* Forms */
+  .cform {
+    padding: clamp(1.25rem, 0.75rem + 2.5vw, 2.75rem);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .cform + .cform {
+    margin-top: var(--space-3);
+  }
+  .is-enhanced .cform + .cform {
+    margin-top: 0;
+  }
+  .cform[hidden] {
+    display: none;
+  }
+  .cform-head {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: var(--space-4);
+  }
+  .cform-title {
+    font-size: var(--step-3);
+  }
+  .hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .fields {
+    display: grid;
+    gap: 1.25rem 1.5rem;
+  }
+  @media (min-width: 46rem) {
+    .fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .field.wide {
+      grid-column: 1 / -1;
+    }
+  }
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+  .field-label {
+    font-weight: 650;
+    font-size: 0.98rem;
+  }
+  .opt {
+    font-weight: 500;
+    color: var(--fg-2);
+  }
+  .field input:not([type='checkbox']):not([type='file']),
+  .field select,
+  .field textarea {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--fg);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.45;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 7rem;
+  }
+  .field select {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 1.25rem) 55%,
+      calc(100% - 0.9rem) 55%;
+    background-size: 0.35rem 0.35rem;
+    background-repeat: no-repeat;
+  }
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--fg-3);
+  }
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover {
+    border-color: var(--fg-3);
+  }
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible {
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent);
+  }
+  .field.has-error input,
+  .field.has-error select,
+  .field.has-error textarea {
+    border-color: var(--link);
+  }
+  .field-hint {
+    font-size: 0.88rem;
+    color: var(--fg-2);
+  }
+  .field-error {
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: var(--link);
+  }
+  .field-error::before {
+    content: '! ';
+  }
+  .field-check {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.75rem;
+  }
+  .field-check input {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin: 0.15rem 0 0;
+    accent-color: var(--fg);
+  }
+  .field-check .field-error {
+    grid-column: 1 / -1;
+  }
+
+  /* File upload */
+  .drop {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding: 1rem;
+    border: 1.5px dashed var(--fg-3);
+    border-radius: var(--radius);
+    background: var(--bg);
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+  .drop.is-over {
+    border-color: var(--focus);
+    background: color-mix(in srgb, var(--focus) 8%, var(--bg));
+  }
+  .file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  :global(html:not(.js)) .file-input {
+    position: static;
+    width: auto;
+    height: auto;
+    opacity: 1;
+  }
+  :global(html:not(.js)) .drop-btn,
+  :global(html:not(.js)) .drop-text {
+    display: none;
+  }
+  .drop-btn {
+    min-height: 2.75rem;
+    padding-block: 0.55rem;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1.5px var(--line);
+  }
+  .file-input:focus-visible + .drop-btn {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .drop-text {
+    color: var(--fg-2);
+    font-size: 0.95rem;
+  }
+  .file-list {
+    display: grid;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .file-list:empty {
+    display: none;
+  }
+  .file-list :global(.file-item) {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+  .file-list :global(.file-thumb) {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.4rem;
+    object-fit: cover;
+    background: var(--surface-2);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .file-list :global(.file-meta) {
+    display: grid;
+    min-width: 0;
+  }
+  .file-list :global(.file-name) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .file-list :global(.file-size) {
+    font-size: 0.85rem;
+    color: var(--fg-2);
+  }
+  .file-list :global(.file-remove) {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .file-list :global(.file-remove:hover) {
+    background: var(--surface-2);
+  }
+
+  /* Footer & submit */
+  .cform-foot {
+    display: grid;
+    gap: 1rem;
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+  .consent {
+    font-size: 0.92rem;
+    color: var(--fg-2);
+    max-width: 60ch;
+  }
+  .submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+  .submit[disabled] {
+    cursor: progress;
+    opacity: 0.75;
+  }
+  .form-status {
+    font-weight: 650;
+    font-size: 0.95rem;
+  }
+  .form-status:empty {
+    display: none;
+  }
+  .form-status[data-tone='error'] {
+    color: var(--link);
+  }
+
+  /* Sent */
+  .cf-done {
+    display: grid;
+    gap: 1rem;
+    justify-items: start;
+    padding: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .cf-done[hidden] {
+    display: none;
+  }
+  .cf-done:focus {
+    outline: none;
+  }
+  .done-star {
+    width: 3rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cf-done:not([hidden]) .done-star {
+      animation: done-pop 0.8s var(--spring) both;
+    }
+  }
+  @keyframes done-pop {
+    from {
+      transform: scale(0.2) rotate(-120deg);
+      opacity: 0;
+    }
+  }
+</style>

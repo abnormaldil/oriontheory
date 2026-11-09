@@ -16,6 +16,26 @@ URLs. `vercel deploy --prod` from this folder still works for a manual deploy.
 The original logo deliverables, planning documents and `.claude/` are git-ignored, so they stay out
 of the public repository; keep your own copy of `public/brand/logo deliverables/`.
 
+## Contact forms
+
+`/contact` has one form per topic (app support, bug report, feedback, privacy request, business
+enquiry), defined in `src/data/contact-forms.js`. Submissions go to `api/contact.js`, a Vercel
+Function that validates them and emails them to `oriontheoryconnect@gmail.com` through Gmail, with
+the sender as Reply-To and any screenshots attached.
+
+- **Setup (once):** turn on 2-Step Verification for the Gmail account, create an app password at
+  https://myaccount.google.com/apppasswords, and add it in Vercel → Project → Settings →
+  Environment Variables as `GMAIL_APP_PASSWORD` (Production and Preview). Redeploy. Without it the
+  form shows "please email us" instead of sending.
+- **Limits:** up to 4 images per form (3 images or PDFs for business), 4 MB in total. Large
+  images are shrunk in the browser before upload. A hidden field, a minimum fill time and a
+  per-IP limit (5 per 10 minutes) filter spam.
+- **Testing:** set `CONTACT_DRY_RUN=1` to build the email without sending it.
+- **Changing a form:** edit its `fields` in `contact-forms.js`; the page and the email follow.
+  `topic`, `started` and `nickname` are reserved field names.
+- **Without JavaScript** the forms still post; the function redirects to `/contact/sent` or
+  `/contact/not-sent`.
+
 ## Scripts
 
 | Command | What it does |
@@ -24,6 +44,7 @@ of the public repository; keep your own copy of `public/brand/logo deliverables/
 | `npm run dev` | Dev server at http://localhost:4321 |
 | `npm run build` | Type-check (`astro check`), then build to `dist/` |
 | `npm run preview` | Serve the production build locally |
+| `node scripts/import-what-flag-assets.mjs` | Re-import What Flag art and screenshots from `../GeoQuest/design` |
 | `npm run og` | Copy the supplied logo SVGs to `public/brand/`, and regenerate social images and icons from them |
 
 ## Routes
@@ -90,7 +111,7 @@ publish it.
 
 ### Release What Flag
 In `src/data/products.ts`, change the entry to `status: 'available'` and add the verified
-`playStoreUrl`. You can also add a real `icon`, original `screenshots`, and a `releaseDate` (only
+`playStoreUrl`. You can also add a real `icon`, real screenshots in `gallery`, and a `releaseDate` (only
 if officially announced). The Google Play buttons and `SoftwareApplication` structured data turn on
 automatically. Review `src/content/legal/what-flag-*.md` against the released build (ads,
 purchase, backup, audience) and update their `updated` date.
