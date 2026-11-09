@@ -49,7 +49,7 @@ Where applicable, information may be used to:
 - maintain security, prevent abuse, and troubleshoot technical issues;
 - meet legal obligations.
 
-We do not sell personal information to data brokers. Third-party services may process information under their own terms and privacy notices.
+We do not sell personal or sensitive user data. Third-party services may process information under their own terms and privacy notices.
 
 ## 4. Third-party services
 

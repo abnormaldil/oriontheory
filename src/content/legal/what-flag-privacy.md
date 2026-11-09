@@ -56,9 +56,11 @@ What Flag uses the Google Mobile Ads SDK to show:
 
 The current version does not implement banner ads. Ad availability and format may change.
 
-Google's advertising services may process information such as IP address (which may be used to infer approximate location), ad interactions, diagnostics, and device or app identifiers, as described in Google's own documentation and policies. This information may be processed by Google and its service providers for advertising delivery, measurement, fraud prevention, and related purposes.
+Google's advertising services may process information such as IP address (which may be used to infer approximate location), ad interactions, diagnostics, and device or app identifiers (including the app set ID), as described in Google's own documentation and policies. This information may be processed by Google and its service providers for advertising delivery, measurement, fraud prevention, and related purposes.
 
 The current configuration applies child-directed and under-age-of-consent treatment to ad requests and sets a G content rating. The advertising ID permission is removed from the release manifest. These settings do not mean that the Google advertising SDK processes no information.
+
+The app set ID is collected by the Google Mobile Ads SDK. Orion Theory does not access the app set ID itself, use it for ads personalization or ads measurement, or link it to other identifiers or personal information.
 
 Google privacy resources:
 
@@ -106,15 +108,15 @@ Google may retain information collected through its advertising or platform serv
 
 ## 8. Children's privacy and audience
 
-What Flag is an educational geography game and may be used by children and adults. The app's intended audience and Google Play target-audience declaration must be determined consistently with its actual design and distribution.
+What Flag is an educational geography game designed for a general audience that includes children as well as adults. Because its Google Play target audience includes children, What Flag is subject to Google Play's Families policy.
 
-The app does not ask players to submit personal information to Orion Theory. However, Google advertising services may process information as described above.
+The app does not ask players to submit personal information to Orion Theory. Ad requests are configured for child-directed treatment and the advertising ID permission is removed, as described in section 3. However, Google advertising services may process information as described above.
 
 Parents or guardians with questions may contact Orion Theory using the details in this notice.
 
 ## 9. Security
 
-What Flag stores game data in app-private storage. The app itself does not encrypt its local Hive database. Android's device-level security may provide additional protection. Google services use their own security measures, described in Google's documentation.
+What Flag stores game data in app-private storage. The app itself does not encrypt its local Hive database. Android's device-level security may provide additional protection. Google states that the data collected by the Google Mobile Ads SDK is encrypted in transit using Transport Layer Security (TLS). Google services use their own security measures, described in Google's documentation.
 
 No method of storage or transmission is completely secure.
 
@@ -123,6 +125,8 @@ No method of storage or transmission is completely secure.
 Google may process information in locations outside your country under its own policies and safeguards. Orion Theory does not operate the Google advertising or Google Play payment infrastructure.
 
 The third-party services used in the current version include Google Mobile Ads, Google Play Billing, and Android's Auto Backup functionality.
+
+Orion Theory does not sell personal or sensitive user data.
 
 ## 11. Changes to this policy
 
