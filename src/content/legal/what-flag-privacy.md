@@ -8,7 +8,7 @@ path: "/games/what-flag/policy"
 kind: "privacy"
 product: "what-flag"
 effective: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-21
 ---
 
 This Privacy Policy explains how **What Flag** (Android package `com.whatflag.app`), published by Orion Theory, handles information.
@@ -111,6 +111,8 @@ Google may retain information collected through its advertising or platform serv
 What Flag is an educational geography game designed for a general audience that includes children as well as adults. Because its Google Play target audience includes children, What Flag is subject to Google Play's Families policy.
 
 The app does not ask players to submit personal information to Orion Theory. Ad requests are configured for child-directed treatment and the advertising ID permission is removed, as described in section 3. However, Google advertising services may process information as described above.
+
+Where the law requires it, Google Play tells the app the player's age range. The app uses it only on the device to keep the game age-appropriate and never stores or shares it.
 
 Parents or guardians with questions may contact Orion Theory using the details in this notice.
 
